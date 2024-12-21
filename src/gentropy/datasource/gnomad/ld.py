@@ -552,3 +552,47 @@ class GnomADLDMatrix:
         )
 
         return joined_index
+
+    def get_locus_index_boundaries_no_studyLocus(
+        self: GnomADLDMatrix,
+        chromosomeInput: str,
+        start: int,
+        end: int,
+        major_population: str = "nfe",
+    ) -> DataFrame:
+        """Extract hail matrix index from StudyLocus rows.
+
+        Args:
+            chromosomeInput (str): Chromosome label
+            start (int): Locus start
+            end (int): Locus end
+            major_population (str): Major population to extract from gnomad matrix, default is "nfe"
+
+        Returns:
+            DataFrame: Returns the index of the gnomad matrix for the locus
+
+        """
+        chromosome = str("chr" + chromosomeInput)
+
+        liftover_ht = hl.read_table(self.liftover_ht_path)
+        liftover_ht = (
+            liftover_ht.filter(
+                (liftover_ht.locus.contig == chromosome)
+                & (liftover_ht.locus.position >= start)
+                & (liftover_ht.locus.position <= end)
+            )
+            .key_by()
+            .select("locus", "alleles", "original_locus")
+            .key_by("original_locus", "alleles")
+            .naive_coalesce(20)
+        )
+
+        hail_index = hl.read_table(
+            self.ld_index_raw_template.format(POP=major_population)
+        )
+
+        joined_index = (
+            liftover_ht.join(hail_index, how="inner").order_by("idx").to_spark()
+        )
+
+        return joined_index
