@@ -885,3 +885,35 @@ def calculate_harmonic_sum(input_array: Column) -> Column:
         / f.pow(x["pos"], 2)
         / f.lit(sum(1 / ((i + 1) ** 2) for i in range(1000))),
     )
+
+
+def convert_map_type_to_columns(df: DataFrame, map_column: Column) -> list[Column]:
+    """Convert a MapType column into multiple columns, one for each key in the map.
+
+    Args:
+        df (DataFrame): A Spark DataFrame
+        map_column (Column): A Spark Column of MapType
+
+    Returns:
+        list[Column]: List of columns, one for each key in the map
+
+    Examples:
+        >>> df = spark.createDataFrame([({'a': 1, 'b': 2},), ({'c':3},)], ["map_col"])
+        >>> df.select(*convert_map_type_to_columns(df, f.col("map_col"))).show()
+        +----+----+----+
+        |   a|   b|   c|
+        +----+----+----+
+        |   1|   2|null|
+        |null|null|   3|
+        +----+----+----+
+        <BLANKLINE>
+    """
+    # Schema is agnostic of the map keys, I have to collect them first
+    keys = (
+        df.select(f.explode(map_column))
+        .select("key")
+        .distinct()
+        .rdd.flatMap(lambda x: x)
+        .collect()
+    )
+    return [map_column.getItem(k).alias(k) for k in keys]

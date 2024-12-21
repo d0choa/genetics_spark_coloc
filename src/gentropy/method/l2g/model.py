@@ -203,7 +203,6 @@ class LocusToGeneModel:
 
         - Distance: (from credible set variants to gene)
         - Molecular QTL Colocalization
-        - Chromatin Interaction: (e.g., promoter-capture Hi-C)
         - Variant Pathogenicity: (from VEP)
 
         More information at: https://opentargets.github.io/gentropy/python_api/methods/l2g/_l2g/

@@ -174,15 +174,25 @@ class Dataset(ABC):
     def filter(self: Self, condition: Column) -> Self:
         """Creates a new instance of a Dataset with the DataFrame filtered by the condition.
 
+        Preserves all attributes from the original instance.
+
         Args:
             condition (Column): Condition to filter the DataFrame
 
         Returns:
-            Self: Filtered Dataset
+            Self: Filtered Dataset with preserved attributes
         """
         df = self._df.filter(condition)
         class_constructor = self.__class__
-        return class_constructor(_df=df, _schema=class_constructor.get_schema())
+        # Get all attributes from the current instance
+        attrs = {
+            key: value
+            for key, value in self.__dict__.items()
+            if key not in ["_df", "_schema"]
+        }
+        return class_constructor(
+            _df=df, _schema=class_constructor.get_schema(), **attrs
+        )
 
     def validate_schema(self: Dataset) -> None:
         """Validate DataFrame schema against expected class schema.

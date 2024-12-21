@@ -29,6 +29,17 @@
         "valueContainsNull": true,
         "valueType": "float"
       }
+    },
+    {
+      "metadata": {},
+      "name": "shapleyValues",
+      "nullable": true,
+      "type": {
+        "keyType": "string",
+        "type": "map",
+        "valueContainsNull": false,
+        "valueType": "float"
+      }
     }
   ]
 }

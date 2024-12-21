@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Type
 
 import pyspark.sql.functions as f
+import shap
 from pyspark.sql import DataFrame
+from pyspark.sql.types import StructType
 
 from gentropy.common.schemas import parse_spark_schema
 from gentropy.common.session import Session
+from gentropy.common.spark_helpers import convert_map_type_to_columns
 from gentropy.dataset.dataset import Dataset
 from gentropy.dataset.l2g_feature_matrix import L2GFeatureMatrix
 from gentropy.dataset.study_index import StudyIndex
@@ -28,6 +32,8 @@ class L2GPrediction(Dataset):
     the study/locus pairs and their functional annotations. The score column informs the
     confidence of the prediction that a gene is causal to an association.
     """
+
+    model: LocusToGeneModel | None = None
 
     @classmethod
     def get_schema(cls: type[L2GPrediction]) -> StructType:
@@ -85,7 +91,9 @@ class L2GPrediction(Dataset):
             .select_features(features_list)
         )
 
-        return l2g_model.predict(fm, session)
+        predictions = l2g_model.predict(fm, session)
+        predictions.model = l2g_model  # Set the model attribute
+        return predictions
 
     def to_disease_target_evidence(
         self: L2GPrediction,
@@ -128,6 +136,59 @@ class L2GPrediction(Dataset):
             )
         )
 
+    def explain(self: L2GPrediction) -> L2GPrediction:
+        """Extract Shapley values for the L2G predictions and add them as a map in an additional column.
+
+        Returns:
+            L2GPrediction: L2GPrediction object with additional column containing feature name to Shapley value mappings
+
+        Raises:
+            ValueError: If the model is not set
+        """
+        if self.model is None:
+            raise ValueError("Model not set, explainer cannot be created")
+
+        explainer = shap.TreeExplainer(
+            self.model.model, feature_perturbation="tree_path_dependent"
+        )
+        df_w_features = self.df.select(
+            "*", *convert_map_type_to_columns(self.df, f.col("locusToGeneFeatures"))
+        ).drop("shapleyValues")
+        features_list = [
+            col for col in df_w_features.columns if col not in self.get_schema().names
+        ]
+        pdf = df_w_features.select(features_list).toPandas()
+
+        # Calculate SHAP values
+        if pdf.shape[0] >= 10_000:
+            logging.warning(
+                "Calculating SHAP values for more than 10,000 rows. This may take a while..."
+            )
+        shap_values = explainer.shap_values(pdf.to_numpy())
+        for i, feature in enumerate(features_list):
+            pdf[f"shap_{feature}"] = [row[i] for row in shap_values]
+
+        spark_session = df_w_features.sparkSession
+        return L2GPrediction(
+            _df=df_w_features.join(
+                # Convert df with shapley values to Spark and join with original df
+                spark_session.createDataFrame(pdf.to_dict(orient="records")),
+                features_list,
+            )
+            .withColumn(
+                "shapleyValues",
+                f.create_map(
+                    *sum(
+                        ((f.lit(col), f.col(f"shap_{col}")) for col in features_list),
+                        (),
+                    )
+                ),
+            )
+            .select(*self.get_schema().names),
+            _schema=self.get_schema(),
+            model=self.model,
+        )
+
     def add_locus_to_gene_features(
         self: L2GPrediction, feature_matrix: L2GFeatureMatrix, features_list: list[str]
     ) -> L2GPrediction:
@@ -166,4 +227,5 @@ class L2GPrediction(Dataset):
                 aggregated_features, on=["studyLocusId", "geneId"], how="left"
             ),
             _schema=self.get_schema(),
+            model=self.model,
         )

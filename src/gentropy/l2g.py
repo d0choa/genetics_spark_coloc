@@ -290,7 +290,7 @@ class LocusToGeneStep:
             f.col("score") >= self.l2g_threshold
         ).add_locus_to_gene_features(
             self.feature_matrix, self.features_list
-        ).df.coalesce(self.session.output_partitions).write.mode(
+        ).explain().df.coalesce(self.session.output_partitions).write.mode(
             self.session.write_mode
         ).parquet(self.predictions_path)
         self.session.logger.info("L2G predictions saved successfully.")
