@@ -1628,13 +1628,13 @@ protobuf = ">=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4
 
 [[package]]
 name = "google-cloud-secret-manager"
-version = "2.20.2"
+version = "2.22.0"
 description = "Google Cloud Secret Manager API client library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google_cloud_secret_manager-2.20.2-py2.py3-none-any.whl", hash = "sha256:99b342ff722feef78aa5bad1c05c6be204f8fee01373a2eb6f05dba710b32879"},
-    {file = "google_cloud_secret_manager-2.20.2.tar.gz", hash = "sha256:bbe24825e334f9e679e825e70d932118a7ff536e67c1ceb048da44111c87a45c"},
+    {file = "google_cloud_secret_manager-2.22.0-py2.py3-none-any.whl", hash = "sha256:9e23a8165ed718de56543723b1e21c394f2cee9ababddcac8ceecc9f427d2696"},
+    {file = "google_cloud_secret_manager-2.22.0.tar.gz", hash = "sha256:5dd95ac6243687f86fd803316c0768f507028958b8a2e69b3aa0ace7ac654bf4"},
 ]
 
 [package.dependencies]
@@ -6098,4 +6098,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <3.11"
-content-hash = "31b6cab2e7afafb35fa84376f0428e6e5b4eabe7a9ca28a7bf197391ab7b8834"
+content-hash = "7019f73ce85f47b8ebdaa66edc17c8cb6180178e178a59da9124a12b82565da1"
