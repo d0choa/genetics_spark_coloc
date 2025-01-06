@@ -7,8 +7,8 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as f
 
 from gentropy.dataset.biosample_index import BiosampleIndex
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.study_index import StudyIndex
+from gentropy.dataset.target_index import TargetIndex
 
 
 def test_study_index_creation(mock_study_index: StudyIndex) -> None:
@@ -188,9 +188,9 @@ class TestQTLValidation:
         self.study_index_no_gene = create_study_index("geneId")
         self.study_index_no_biosample_id = create_study_index("biosampleFromSourceId")
 
-        self.gene_index = GeneIndex(
+        self.target_index = TargetIndex(
             _df=spark.createDataFrame(self.GENE_DATA, self.GENE_COLUMNS),
-            _schema=GeneIndex.get_schema(),
+            _schema=TargetIndex.get_schema(),
         )
         self.biosample_index = BiosampleIndex(
             _df=spark.createDataFrame(self.BIOSAMPLE_DATA, self.BIOSAMPLE_COLUMNS),
@@ -199,7 +199,7 @@ class TestQTLValidation:
 
     def test_gene_validation_type(self: TestQTLValidation) -> None:
         """Testing if the target validation runs and returns the expected type."""
-        validated = self.study_index.validate_target(self.gene_index)
+        validated = self.study_index.validate_target(self.target_index)
         assert isinstance(validated, StudyIndex)
 
     def test_biosample_validation_type(self: TestQTLValidation) -> None:
@@ -211,7 +211,7 @@ class TestQTLValidation:
     def test_qtl_validation_correctness(self: TestQTLValidation, test: str) -> None:
         """Testing if the QTL validation only flags the expected studies."""
         if test == "gene":
-            validated = self.study_index.validate_target(self.gene_index).persist()
+            validated = self.study_index.validate_target(self.target_index).persist()
             bad_study = "s2"
         if test == "biosample":
             validated = self.study_index.validate_biosample(
@@ -252,7 +252,7 @@ class TestQTLValidation:
         """Testing what happens if an expected column is not present."""
         if drop == "gene":
             if test == "gene":
-                validated = self.study_index_no_gene.validate_target(self.gene_index)
+                validated = self.study_index_no_gene.validate_target(self.target_index)
             if test == "biosample":
                 validated = self.study_index_no_gene.validate_biosample(
                     self.biosample_index
@@ -260,7 +260,7 @@ class TestQTLValidation:
         if drop == "biosample":
             if test == "gene":
                 validated = self.study_index_no_biosample_id.validate_target(
-                    self.gene_index
+                    self.target_index
                 )
             if test == "biosample":
                 validated = self.study_index_no_biosample_id.validate_biosample(

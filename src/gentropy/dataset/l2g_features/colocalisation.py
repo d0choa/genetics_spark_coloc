@@ -9,11 +9,11 @@ from pyspark.sql import Window
 
 from gentropy.common.spark_helpers import convert_from_wide_to_long
 from gentropy.dataset.colocalisation import Colocalisation
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.l2g_features.l2g_feature import L2GFeature
 from gentropy.dataset.l2g_gold_standard import L2GGoldStandard
 from gentropy.dataset.study_index import StudyIndex
 from gentropy.dataset.study_locus import StudyLocus
+from gentropy.dataset.target_index import TargetIndex
 from gentropy.dataset.variant_index import VariantIndex
 
 if TYPE_CHECKING:
@@ -74,7 +74,7 @@ def extend_missing_colocalisation_to_neighbourhood_genes(
     feature_name: str,
     local_features: DataFrame,
     variant_index: VariantIndex,
-    gene_index: GeneIndex,
+    target_index: TargetIndex,
     study_locus: StudyLocus,
 ) -> DataFrame:
     """This function creates an artificial dataset of features that represents the missing colocalisation to the neighbourhood genes.
@@ -83,7 +83,7 @@ def extend_missing_colocalisation_to_neighbourhood_genes(
         feature_name (str): The name of the feature to extend
         local_features (DataFrame): The dataframe of features to extend
         variant_index (VariantIndex): Variant index containing all variant/gene relationships
-        gene_index (GeneIndex): Gene index to fetch the gene information
+        target_index (TargetIndex): Target index to fetch the gene information
         study_locus (StudyLocus): Study locus to traverse between colocalisation and variant index
 
     Returns:
@@ -94,7 +94,7 @@ def extend_missing_colocalisation_to_neighbourhood_genes(
             "variantId", f.explode("transcriptConsequences").alias("tc")
         )
         .select(f.col("tc.targetId").alias("geneId"), "variantId")
-        .join(gene_index.df.select("geneId", "biotype"), "geneId", "left")
+        .join(target_index.df.select("geneId", "biotype"), "geneId", "left")
         .filter(f.col("biotype") == "protein_coding")
         .drop("biotype")
         .distinct()
@@ -127,7 +127,7 @@ def common_neighbourhood_colocalisation_feature_logic(
     *,
     colocalisation: Colocalisation,
     study_index: StudyIndex,
-    gene_index: GeneIndex,
+    target_index: TargetIndex,
     study_locus: StudyLocus,
     variant_index: VariantIndex,
 ) -> DataFrame:
@@ -141,7 +141,7 @@ def common_neighbourhood_colocalisation_feature_logic(
         qtl_types (list[str] | str): The types of QTL to filter the data by
         colocalisation (Colocalisation): Dataset with the colocalisation results
         study_index (StudyIndex): Study index to fetch study type and gene
-        gene_index (GeneIndex): Gene index to add gene type
+        target_index (TargetIndex): Target index to add gene type
         study_locus (StudyLocus): Study locus to traverse between colocalisation and study index
         variant_index (VariantIndex): Variant index to annotate all overlapping genes
 
@@ -165,7 +165,7 @@ def common_neighbourhood_colocalisation_feature_logic(
             local_feature_name,
             local_max,
             variant_index,
-            gene_index,
+            target_index,
             study_locus,
         )
     )
@@ -173,7 +173,7 @@ def common_neighbourhood_colocalisation_feature_logic(
         extended_local_max.join(
             # Compute average score in the vicinity (feature will be the same for any gene associated with a studyLocus)
             # (non protein coding genes in the vicinity are excluded see #3552)
-            gene_index.df.filter(f.col("biotype") == "protein_coding").select("geneId"),
+            target_index.df.filter(f.col("biotype") == "protein_coding").select("geneId"),
             "geneId",
             "inner",
         )
@@ -242,7 +242,7 @@ class EQtlColocClppMaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]
@@ -333,7 +333,7 @@ class PQtlColocClppMaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]
@@ -423,7 +423,7 @@ class SQtlColocClppMaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]
@@ -513,7 +513,7 @@ class EQtlColocH4MaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]
@@ -603,7 +603,7 @@ class PQtlColocH4MaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]
@@ -693,7 +693,7 @@ class SQtlColocH4MaximumNeighbourhoodFeature(L2GFeature):
     feature_dependency_type = [
         Colocalisation,
         StudyIndex,
-        GeneIndex,
+        TargetIndex,
         StudyLocus,
         VariantIndex,
     ]

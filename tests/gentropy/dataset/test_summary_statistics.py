@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 def test_summary_statistics__creation(
     mock_summary_statistics: SummaryStatistics,
 ) -> None:
-    """Test gene index creation with mock gene index."""
+    """Test summary statistics creation with mock summary statistics."""
     assert isinstance(mock_summary_statistics, SummaryStatistics)
 
 

@@ -16,11 +16,11 @@ from pyspark.sql.types import (
 )
 
 from gentropy.dataset.colocalisation import Colocalisation
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.l2g_feature_matrix import L2GFeatureMatrix
 from gentropy.dataset.l2g_gold_standard import L2GGoldStandard
 from gentropy.dataset.study_index import StudyIndex
 from gentropy.dataset.study_locus import StudyLocus
+from gentropy.dataset.target_index import TargetIndex
 from gentropy.method.l2g.feature_factory import L2GFeatureInputLoader
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class TestFromFeaturesList:
             colocalisation=self.sample_colocalisation,
             study_index=self.sample_study_index,
             study_locus=self.sample_study_locus,
-            gene_index=self.sample_gene_index,
+            target_index=self.sample_target_index,
         )
         fm = L2GFeatureMatrix.from_features_list(
             self.sample_study_locus, features_list, loader
@@ -170,7 +170,7 @@ class TestFromFeaturesList:
             ),
             _schema=Colocalisation.get_schema(),
         )
-        self.sample_gene_index = GeneIndex(
+        self.sample_target_index = TargetIndex(
             _df=spark.createDataFrame(
                 [
                     ("g1", "X", "protein_coding", 200),
@@ -183,7 +183,7 @@ class TestFromFeaturesList:
                     "tss",
                 ],
             ),
-            _schema=GeneIndex.get_schema(),
+            _schema=TargetIndex.get_schema(),
         )
 
 

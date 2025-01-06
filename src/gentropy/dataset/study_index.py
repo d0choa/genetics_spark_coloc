@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from pyspark.sql.types import StructType
 
     from gentropy.dataset.biosample_index import BiosampleIndex
-    from gentropy.dataset.gene_index import GeneIndex
+    from gentropy.dataset.target_index import TargetIndex
 
 
 class StudyQualityCheck(Enum):
@@ -404,11 +404,11 @@ class StudyIndex(Dataset):
         )
         return StudyIndex(_df=validated_df, _schema=StudyIndex.get_schema())
 
-    def validate_target(self: StudyIndex, target_index: GeneIndex) -> StudyIndex:
+    def validate_target(self: StudyIndex, target_index: TargetIndex) -> StudyIndex:
         """Validating gene identifiers in the study index against the provided target index.
 
         Args:
-            target_index (GeneIndex): gene index containing the reference gene identifiers (Ensembl gene identifiers).
+            target_index (TargetIndex): target index containing the reference gene identifiers (Ensembl gene identifiers).
 
         Returns:
             StudyIndex: with flagged studies if geneId could not be validated.

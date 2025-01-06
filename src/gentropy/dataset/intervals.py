@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from gentropy.common.Liftover import LiftOverSpark
 from gentropy.common.schemas import parse_spark_schema
 from gentropy.dataset.dataset import Dataset
-from gentropy.dataset.gene_index import GeneIndex
+from gentropy.dataset.target_index import TargetIndex
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
@@ -35,7 +35,7 @@ class Intervals(Dataset):
         spark: SparkSession,
         source_name: str,
         source_path: str,
-        gene_index: GeneIndex,
+        target_index: TargetIndex,
         lift: LiftOverSpark,
     ) -> Intervals:
         """Collect interval data for a particular source.
@@ -44,7 +44,7 @@ class Intervals(Dataset):
             spark (SparkSession): Spark session
             source_name (str): Name of the interval source
             source_path (str): Path to the interval source file
-            gene_index (GeneIndex): Gene index
+            target_index (TargetIndex): Target index
             lift (LiftOverSpark): LiftOverSpark instance to convert coordinats from hg37 to hg38
 
         Returns:
@@ -70,4 +70,4 @@ class Intervals(Dataset):
 
         source_class = source_to_class[source_name]
         data = source_class.read(spark, source_path)  # type: ignore
-        return source_class.parse(data, gene_index, lift)  # type: ignore
+        return source_class.parse(data, target_index, lift)  # type: ignore

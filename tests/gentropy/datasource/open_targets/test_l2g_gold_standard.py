@@ -29,8 +29,8 @@ if TYPE_CHECKING:
     from pyspark.sql.session import SparkSession
 
     from gentropy.dataset.colocalisation import Colocalisation
-    from gentropy.dataset.gene_index import GeneIndex
     from gentropy.dataset.study_locus import StudyLocus
+    from gentropy.dataset.target_index import TargetIndex
 
 
 def test_open_targets_as_l2g_gold_standard(
@@ -162,7 +162,7 @@ def test_build_feature_matrix(
     mock_study_locus: StudyLocus,
     mock_colocalisation: Colocalisation,
     mock_study_index: StudyIndex,
-    mock_gene_index: GeneIndex,
+    mock_target_index: TargetIndex,
 ) -> None:
     """Test building feature matrix with the eQtlColocH4Maximum feature."""
     features_list = ["eQtlColocH4Maximum", "isProteinCoding"]
@@ -170,7 +170,7 @@ def test_build_feature_matrix(
         colocalisation=mock_colocalisation,
         study_index=mock_study_index,
         study_locus=mock_study_locus,
-        gene_index=mock_gene_index,
+        target_index=mock_target_index,
     )
     fm = mock_study_locus.build_feature_matrix(features_list, loader)
     assert isinstance(

@@ -27,7 +27,7 @@ class BiosampleIndexStep:
             cell_ontology_input_path (str): Input cell ontology dataset path.
             uberon_input_path (str): Input uberon dataset path.
             efo_input_path (str): Input efo dataset path.
-            biosample_index_path (str): Output gene index dataset path.
+            biosample_index_path (str): Output biosample index dataset path.
         """
         cell_ontology_index = extract_ontology_from_json(
             cell_ontology_input_path, session.spark

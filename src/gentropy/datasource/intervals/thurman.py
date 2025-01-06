@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession
 
     from gentropy.common.Liftover import LiftOverSpark
-    from gentropy.dataset.gene_index import GeneIndex
+    from gentropy.dataset.target_index import TargetIndex
 
 
 class IntervalsThurman:
@@ -47,14 +47,14 @@ class IntervalsThurman:
     def parse(
         cls: type[IntervalsThurman],
         thurman_raw: DataFrame,
-        gene_index: GeneIndex,
+        target_index: TargetIndex,
         lift: LiftOverSpark,
     ) -> Intervals:
         """Parse the Thurman et al. 2012 dataset.
 
         Args:
             thurman_raw (DataFrame): raw Thurman et al. 2019 dataset
-            gene_index (GeneIndex): gene index
+            target_index (TargetIndex): Target index
             lift (LiftOverSpark): LiftOverSpark instance
 
         Returns:
@@ -80,7 +80,7 @@ class IntervalsThurman:
                 .alias("intervals")
                 # Map gene names to gene IDs:
                 .join(
-                    gene_index.symbols_lut().alias("genes"),
+                    target_index.symbols_lut().alias("genes"),
                     on=[
                         f.col("intervals.gene_name") == f.col("genes.geneSymbol"),
                         f.col("intervals.chrom") == f.col("genes.chromosome"),

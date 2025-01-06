@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any
 import pyspark.sql.functions as f
 
 from gentropy.common.spark_helpers import convert_from_wide_to_long
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.l2g_features.l2g_feature import L2GFeature
 from gentropy.dataset.l2g_gold_standard import L2GGoldStandard
 from gentropy.dataset.study_locus import CredibleSetConfidenceClasses, StudyLocus
+from gentropy.dataset.target_index import TargetIndex
 from gentropy.dataset.variant_index import VariantIndex
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 def common_genecount_feature_logic(
     study_loci_to_annotate: StudyLocus | L2GGoldStandard,
     *,
-    gene_index: GeneIndex,
+    target_index: TargetIndex,
     feature_name: str,
     genomic_window: int,
     protein_coding_only: bool = False,
@@ -30,7 +30,7 @@ def common_genecount_feature_logic(
     Args:
         study_loci_to_annotate (StudyLocus | L2GGoldStandard): The dataset containing study loci
             that will be used for annotation
-        gene_index (GeneIndex): Dataset containing information related to all genes in release.
+        target_index (TargetIndex): Dataset containing information related to all genes in release.
         feature_name (str): The name of the feature
         genomic_window (int): The maximum window size to consider
         protein_coding_only (bool): Whether to only consider protein coding genes in calculation.
@@ -45,16 +45,16 @@ def common_genecount_feature_logic(
         .withColumn("window_end", f.col("position") + (genomic_window / 2))
         .withColumnRenamed("chromosome", "SL_chromosome")
     )
-    gene_index_filter = gene_index.df
+    target_index_filter = target_index.df
 
     if protein_coding_only:
-        gene_index_filter = gene_index_filter.filter(
+        target_index_filter = target_index_filter.filter(
             f.col("biotype") == "protein_coding"
         )
 
     distinct_gene_counts = (
         study_loci_window.join(
-            gene_index_filter.alias("genes"),
+            target_index_filter.alias("genes"),
             on=(
                 (f.col("SL_chromosome") == f.col("genes.chromosome"))
                 & (f.col("genes.tss") >= f.col("window_start"))
@@ -68,7 +68,7 @@ def common_genecount_feature_logic(
 
     return (
         study_loci_window.join(
-            gene_index_filter.alias("genes"),
+            target_index_filter.alias("genes"),
             on=(
                 (f.col("SL_chromosome") == f.col("genes.chromosome"))
                 & (f.col("genes.tss") >= f.col("window_start"))
@@ -85,7 +85,7 @@ def common_genecount_feature_logic(
 def is_protein_coding_feature_logic(
     study_loci_to_annotate: StudyLocus | L2GGoldStandard,
     *,
-    gene_index: GeneIndex,
+    target_index: TargetIndex,
     feature_name: str,
     genomic_window: int,
 ) -> DataFrame:
@@ -94,7 +94,7 @@ def is_protein_coding_feature_logic(
     Args:
         study_loci_to_annotate (StudyLocus | L2GGoldStandard): The dataset containing study loci
             that will be used for annotation
-        gene_index (GeneIndex): Dataset containing information related to all genes in release.
+        target_index (TargetIndex): Dataset containing information related to all genes in release.
         feature_name (str): The name of the feature
         genomic_window (int): The maximum window size to consider
 
@@ -110,7 +110,7 @@ def is_protein_coding_feature_logic(
     )
     return (
         study_loci_window.join(
-            gene_index.df.alias("genes"),
+            target_index.df.alias("genes"),
             on=(
                 (f.col("SL_chromosome") == f.col("genes.chromosome"))
                 & (f.col("genes.tss") >= f.col("window_start"))
@@ -130,7 +130,7 @@ def is_protein_coding_feature_logic(
 class GeneCountFeature(L2GFeature):
     """Counts the number of genes within a specified window size from the study locus."""
 
-    feature_dependency_type = GeneIndex
+    feature_dependency_type = TargetIndex
     feature_name = "geneCount500kb"
 
     @classmethod
@@ -143,7 +143,7 @@ class GeneCountFeature(L2GFeature):
 
         Args:
             study_loci_to_annotate (StudyLocus | L2GGoldStandard): The dataset containing study loci that will be used for annotation
-            feature_dependency (dict[str, Any]): Dictionary containing dependencies, with gene index and window size
+            feature_dependency (dict[str, Any]): Dictionary containing dependencies, with target index and window size
 
         Returns:
             GeneCountFeature: Feature dataset
@@ -170,7 +170,7 @@ class GeneCountFeature(L2GFeature):
 class ProteinGeneCountFeature(L2GFeature):
     """Counts the number of protein coding genes within a specified window size from the study locus."""
 
-    feature_dependency_type = GeneIndex
+    feature_dependency_type = TargetIndex
     feature_name = "proteinGeneCount500kb"
 
     @classmethod
@@ -183,7 +183,7 @@ class ProteinGeneCountFeature(L2GFeature):
 
         Args:
             study_loci_to_annotate (StudyLocus | L2GGoldStandard): The dataset containing study loci that will be used for annotation
-            feature_dependency (dict[str, Any]): Dictionary containing dependencies, with gene index and window size
+            feature_dependency (dict[str, Any]): Dictionary containing dependencies, with target index and window size
 
         Returns:
             ProteinGeneCountFeature: Feature dataset
@@ -211,7 +211,7 @@ class ProteinGeneCountFeature(L2GFeature):
 class ProteinCodingFeature(L2GFeature):
     """Indicates whether a gene is protein-coding within a specified window size from the study locus."""
 
-    feature_dependency_type = GeneIndex
+    feature_dependency_type = TargetIndex
     feature_name = "isProteinCoding"
 
     @classmethod
@@ -224,7 +224,7 @@ class ProteinCodingFeature(L2GFeature):
 
         Args:
             study_loci_to_annotate (StudyLocus | L2GGoldStandard): The dataset containing study loci that will be used for annotation
-            feature_dependency (dict[str, Any]): Dictionary containing dependencies, including gene index
+            feature_dependency (dict[str, Any]): Dictionary containing dependencies, including target index
 
         Returns:
             ProteinCodingFeature: Feature dataset with 1 if the gene is protein-coding, 0 otherwise

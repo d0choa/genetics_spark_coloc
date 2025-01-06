@@ -6,8 +6,8 @@ from pyspark.sql import functions as f
 
 from gentropy.common.session import Session
 from gentropy.dataset.biosample_index import BiosampleIndex
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.study_index import StudyIndex
+from gentropy.dataset.target_index import TargetIndex
 
 
 class StudyValidationStep:
@@ -41,7 +41,7 @@ class StudyValidationStep:
             invalid_qc_reasons (list[str]): List of invalid quality check reason names from `StudyQualityCheck` (e.g. ['DUPLICATED_STUDY']).
         """
         # Reading datasets:
-        target_index = GeneIndex.from_parquet(session, target_index_path)
+        target_index = TargetIndex.from_parquet(session, target_index_path)
         biosample_index = BiosampleIndex.from_parquet(session, biosample_index_path)
         # Reading disease index and pre-process.
         # This logic does not belong anywhere, but gentorpy has no disease dataset yet.

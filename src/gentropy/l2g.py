@@ -14,12 +14,12 @@ from gentropy.common.session import Session
 from gentropy.common.spark_helpers import calculate_harmonic_sum
 from gentropy.common.utils import access_gcp_secret
 from gentropy.dataset.colocalisation import Colocalisation
-from gentropy.dataset.gene_index import GeneIndex
 from gentropy.dataset.l2g_feature_matrix import L2GFeatureMatrix
 from gentropy.dataset.l2g_gold_standard import L2GGoldStandard
 from gentropy.dataset.l2g_prediction import L2GPrediction
 from gentropy.dataset.study_index import StudyIndex
 from gentropy.dataset.study_locus import StudyLocus
+from gentropy.dataset.target_index import TargetIndex
 from gentropy.dataset.variant_index import VariantIndex
 from gentropy.method.l2g.feature_factory import L2GFeatureInputLoader
 from gentropy.method.l2g.model import LocusToGeneModel
@@ -38,7 +38,7 @@ class LocusToGeneFeatureMatrixStep:
         variant_index_path: str | None = None,
         colocalisation_path: str | None = None,
         study_index_path: str | None = None,
-        gene_index_path: str | None = None,
+        target_index_path: str | None = None,
         feature_matrix_path: str,
     ) -> None:
         """Initialise the step and run the logic based on mode.
@@ -50,7 +50,7 @@ class LocusToGeneFeatureMatrixStep:
             variant_index_path (str | None): Path to the variant index dataset
             colocalisation_path (str | None): Path to the colocalisation dataset
             study_index_path (str | None): Path to the study index dataset
-            gene_index_path (str | None): Path to the gene index dataset
+            target_index_path (str | None): Path to the target index dataset
             feature_matrix_path (str): Path to the L2G feature matrix output dataset
         """
         credible_set = StudyLocus.from_parquet(
@@ -73,9 +73,9 @@ class LocusToGeneFeatureMatrixStep:
             if colocalisation_path
             else None
         )
-        gene_index = (
-            GeneIndex.from_parquet(session, gene_index_path, recursiveFileLookup=True)
-            if gene_index_path
+        target_index = (
+            TargetIndex.from_parquet(session, target_index_path, recursiveFileLookup=True)
+            if target_index_path
             else None
         )
         features_input_loader = L2GFeatureInputLoader(
@@ -83,7 +83,7 @@ class LocusToGeneFeatureMatrixStep:
             colocalisation=coloc,
             study_index=studies,
             study_locus=credible_set,
-            gene_index=gene_index,
+            target_index=target_index,
         )
 
         fm = credible_set.filter(f.col("studyType") == "gwas").build_feature_matrix(

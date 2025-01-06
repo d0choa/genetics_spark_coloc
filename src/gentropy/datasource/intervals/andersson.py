@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession
 
     from gentropy.common.Liftover import LiftOverSpark
-    from gentropy.dataset.gene_index import GeneIndex
+    from gentropy.dataset.target_index import TargetIndex
 
 
 class IntervalsAndersson:
@@ -49,14 +49,14 @@ class IntervalsAndersson:
     def parse(
         cls: type[IntervalsAndersson],
         raw_anderson_df: DataFrame,
-        gene_index: GeneIndex,
+        target_index: TargetIndex,
         lift: LiftOverSpark,
     ) -> Intervals:
         """Parse Andersson et al. 2014 dataset.
 
         Args:
             raw_anderson_df (DataFrame): Raw Andersson et al. dataset
-            gene_index (GeneIndex): Gene index
+            target_index (TargetIndex): Target index
             lift (LiftOverSpark): LiftOverSpark instance
 
         Returns:
@@ -108,10 +108,10 @@ class IntervalsAndersson:
                 .withColumnRenamed("mapped_start", "start")
                 .withColumnRenamed("mapped_end", "end")
                 .distinct()
-                # Joining with the gene index
+                # Joining with the target index
                 .alias("intervals")
                 .join(
-                    gene_index.symbols_lut().alias("genes"),
+                    target_index.symbols_lut().alias("genes"),
                     on=[
                         f.col("intervals.gene_symbol") == f.col("genes.geneSymbol"),
                         # Drop rows where the TSS is far from the start of the region

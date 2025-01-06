@@ -1,4 +1,4 @@
-"""Gene index dataset."""
+"""Target index dataset."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -15,34 +15,34 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class GeneIndex(Dataset):
-    """Gene index dataset.
+class TargetIndex(Dataset):
+    """Target index dataset.
 
     Gene-based annotation.
     """
 
     @classmethod
-    def get_schema(cls: type[GeneIndex]) -> StructType:
-        """Provides the schema for the GeneIndex dataset.
+    def get_schema(cls: type[TargetIndex]) -> StructType:
+        """Provides the schema for the TargetIndex dataset.
 
         Returns:
-            StructType: Schema for the GeneIndex dataset
+            StructType: Schema for the TargetIndex dataset
         """
-        return parse_spark_schema("gene_index.json")
+        return parse_spark_schema("target_index.json")
 
-    def filter_by_biotypes(self: GeneIndex, biotypes: list[str]) -> GeneIndex:
+    def filter_by_biotypes(self: TargetIndex, biotypes: list[str]) -> TargetIndex:
         """Filter by approved biotypes.
 
         Args:
             biotypes (list[str]): List of Ensembl biotypes to keep.
 
         Returns:
-            GeneIndex: Gene index dataset filtered by biotypes.
+            TargetIndex: Target index dataset filtered by biotypes.
         """
         self.df = self._df.filter(f.col("biotype").isin(biotypes))
         return self
 
-    def locations_lut(self: GeneIndex) -> DataFrame:
+    def locations_lut(self: TargetIndex) -> DataFrame:
         """Gene location information.
 
         Returns:
@@ -57,7 +57,7 @@ class GeneIndex(Dataset):
             "tss",
         )
 
-    def symbols_lut(self: GeneIndex) -> DataFrame:
+    def symbols_lut(self: TargetIndex) -> DataFrame:
         """Gene symbol lookup table.
 
         Pre-processess gene/target dataset to create lookup table of gene symbols, including
