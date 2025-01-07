@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Mapping
+from typing import Any
+from collections.abc import Iterator, Mapping
 
 from gentropy.dataset.l2g_features.colocalisation import (
     EQtlColocClppMaximumFeature,
