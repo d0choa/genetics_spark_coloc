@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import re
 import sys
+from collections.abc import Callable, Iterable
 from functools import reduce, wraps
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 import pyspark.sql.functions as f
 import pyspark.sql.types as t

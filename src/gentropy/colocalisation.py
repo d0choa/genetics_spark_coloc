@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Type
+from typing import Any
 
 from pyspark.sql.functions import col
 
@@ -77,14 +77,14 @@ class ColocalisationStep:
     @classmethod
     def _get_colocalisation_class(
         cls, method: str
-    ) -> Type[ColocalisationMethodInterface]:
+    ) -> type[ColocalisationMethodInterface]:
         """Get colocalisation class.
 
         Args:
             method (str): Colocalisation method.
 
         Returns:
-            Type[ColocalisationMethodInterface]: Class that implements the ColocalisationMethodInterface.
+            type[ColocalisationMethodInterface]: Class that implements the ColocalisationMethodInterface.
 
         Raises:
             ValueError: if method not available.
@@ -96,5 +96,4 @@ class ColocalisationStep:
         method = method.lower()
         if method not in cls.__coloc_methods__:
             raise ValueError(f"Colocalisation method {method} not available.")
-        coloc_method = cls.__coloc_methods__[method]
-        return coloc_method
+        return cls.__coloc_methods__[method]

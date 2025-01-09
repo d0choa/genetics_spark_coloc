@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 import pyspark.sql.functions as f
 from pyspark.sql import Window
@@ -55,7 +55,7 @@ class L2GFeatureMatrix:
 
     @classmethod
     def from_features_list(
-        cls: Type[L2GFeatureMatrix],
+        cls: type[L2GFeatureMatrix],
         study_loci_to_annotate: StudyLocus | L2GGoldStandard,
         features_list: list[str],
         features_input_loader: L2GFeatureInputLoader,

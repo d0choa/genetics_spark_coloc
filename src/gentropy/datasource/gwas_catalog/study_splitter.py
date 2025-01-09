@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 import pyspark.sql.functions as f
 from pyspark.sql.window import Window
@@ -84,7 +84,7 @@ class GWASCatalogStudySplitter:
         cls: type[GWASCatalogStudySplitter],
         studies: StudyIndexGWASCatalog,
         associations: StudyLocusGWASCatalog,
-    ) -> Tuple[StudyIndexGWASCatalog, StudyLocusGWASCatalog]:
+    ) -> tuple[StudyIndexGWASCatalog, StudyLocusGWASCatalog]:
         """Splitting multi-trait GWAS Catalog studies.
 
         If assigned disease of the study and the association don't agree, we assume the study needs to be split.
@@ -95,7 +95,7 @@ class GWASCatalogStudySplitter:
             associations (StudyLocusGWASCatalog): GWAS Catalog associations.
 
         Returns:
-            Tuple[StudyIndexGWASCatalog, StudyLocusGWASCatalog]: Split studies and associations.
+            tuple[StudyIndexGWASCatalog, StudyLocusGWASCatalog]: Split studies and associations.
         """
         # Composite of studies and associations to resolve scattered information
         st_ass = (

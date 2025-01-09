@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
@@ -40,7 +40,7 @@ class L2GPrediction(Dataset):
 
     @classmethod
     def from_credible_set(
-        cls: Type[L2GPrediction],
+        cls: type[L2GPrediction],
         session: Session,
         credible_set: StudyLocus,
         feature_matrix: L2GFeatureMatrix,

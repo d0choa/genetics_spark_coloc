@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 import skops.io as sio
@@ -51,7 +51,7 @@ class LocusToGeneModel:
         self.model.set_params(**self.hyperparameters_dict)
 
     @classmethod
-    def load_from_disk(cls: Type[LocusToGeneModel], path: str) -> LocusToGeneModel:
+    def load_from_disk(cls: type[LocusToGeneModel], path: str) -> LocusToGeneModel:
         """Load a fitted model from disk.
 
         Args:
@@ -83,7 +83,7 @@ class LocusToGeneModel:
 
     @classmethod
     def load_from_hub(
-        cls: Type[LocusToGeneModel],
+        cls: type[LocusToGeneModel],
         model_id: str,
         hf_token: str | None = None,
         model_name: str = "classifier.skops",

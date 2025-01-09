@@ -1,7 +1,6 @@
 """Test colocalisation step."""
 
 from pathlib import Path
-from typing import Type
 
 import pytest
 
@@ -208,7 +207,7 @@ class TestColocalisationStep:
         ],
     )
     def test_get_colocalisation_class(
-        self, label: str, expected_method: Type[ColocalisationMethodInterface]
+        self, label: str, expected_method: type[ColocalisationMethodInterface]
     ) -> None:
         """Test _get_colocalisation_class method on ColocalisationStep."""
         method = ColocalisationStep._get_colocalisation_class(label)

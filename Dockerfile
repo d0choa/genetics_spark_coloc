@@ -11,7 +11,7 @@ ENV POETRY_NO_INTERACTION=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache \
     JAVA_HOME=/usr
 
-RUN pip install poetry==1.7.1
+RUN pip install poetry>=2.0.0
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./

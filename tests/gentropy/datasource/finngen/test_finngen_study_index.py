@@ -18,8 +18,8 @@ from gentropy.datasource.finngen.study_index import (
 from gentropy.finngen_studies import FinnGenStudiesStep
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
-    from typing import Callable
 
     from pyspark.sql import SparkSession
 

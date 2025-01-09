@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Type
-
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 
@@ -24,7 +22,7 @@ class OpenTargetsL2GGoldStandard:
 
     @classmethod
     def parse_positive_curation(
-        cls: Type[OpenTargetsL2GGoldStandard], gold_standard_curation: DataFrame
+        cls: type[OpenTargetsL2GGoldStandard], gold_standard_curation: DataFrame
     ) -> DataFrame:
         """Parse positive set from gold standard curation.
 
@@ -60,7 +58,7 @@ class OpenTargetsL2GGoldStandard:
 
     @classmethod
     def expand_gold_standard_with_negatives(
-        cls: Type[OpenTargetsL2GGoldStandard],
+        cls: type[OpenTargetsL2GGoldStandard],
         positive_set: DataFrame,
         variant_index: VariantIndex,
     ) -> DataFrame:

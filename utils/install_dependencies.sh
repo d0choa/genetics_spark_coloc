@@ -31,6 +31,3 @@ poetry install --sync
 echo "Setting up pre-commit..."
 poetry run pre-commit install
 poetry run pre-commit install --hook-type commit-msg
-
-echo "Activating the Poetry environment..."
-poetry shell
