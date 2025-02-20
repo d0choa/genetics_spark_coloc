@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from pyspark.sql import SparkSession
 
 
-class TestVEPParserInSilicoExtractor:
-    """Testing the _vep_in_silico_prediction_extractor method of the VEP parser class.
+class TestVEPParserVariantEffectExtractor:
+    """Testing the _vep_variant_effect_extractor method of the VEP parser class.
 
     These tests assumes that the _get_most_severe_transcript() method works correctly, as it's not tested.
 
@@ -42,7 +42,7 @@ class TestVEPParserInSilicoExtractor:
     SAMPLE_COLUMNS = ["variantId", "assessment", "score", "gene_id", "flag"]
 
     @pytest.fixture(autouse=True)
-    def _setup(self: TestVEPParserInSilicoExtractor, spark: SparkSession) -> None:
+    def _setup(self: TestVEPParserVariantEffectExtractor, spark: SparkSession) -> None:
         """Setup fixture."""
         parsed_df = (
             spark.createDataFrame(self.SAMPLE_DATA, self.SAMPLE_COLUMNS)
@@ -59,31 +59,28 @@ class TestVEPParserInSilicoExtractor:
             )
             .select(
                 "variantId",
-                VariantEffectPredictorParser._vep_in_silico_prediction_extractor(
+                VariantEffectPredictorParser._vep_variant_effect_extractor(
                     "transcripts", "method_name", "score", "assessment", "flag"
-                ).alias("in_silico_predictions"),
+                ).alias("variant_effect"),
             )
         ).persist()
 
         self.df = parsed_df
 
-    def test_in_silico_output_missing_value(
-        self: TestVEPParserInSilicoExtractor,
+    def test_variant_effect_missing_value(
+        self: TestVEPParserVariantEffectExtractor,
     ) -> None:
-        """Test if the in silico output count is correct."""
+        """Test if the variant effect count is correct."""
         variant_with_missing_score = [
             x[0] for x in filter(lambda x: x[2] is None, self.SAMPLE_DATA)
         ]
         # Assert that the correct variants return null:
-        assert (
-            [
-                x["variantId"]
-                for x in self.df.filter(
-                    f.col("in_silico_predictions").isNull()
-                ).collect()
-            ]
-            == variant_with_missing_score
-        ), "Not the right variants got nullified in-silico predictor object."
+        assert [
+            x["variantId"]
+            for x in self.df.filter(f.col("variant_effect").isNull()).collect()
+        ] == variant_with_missing_score, (
+            "Not the right variants got nullified in variant effect object."
+        )
 
 
 class TestVEPParser:
@@ -120,18 +117,18 @@ class TestVEPParser:
             _schema=VariantIndex.get_schema(),
         )
 
-        assert isinstance(
-            variant_index, VariantIndex
-        ), "VariantIndex object not created."
+        assert isinstance(variant_index, VariantIndex), (
+            "VariantIndex object not created."
+        )
 
     def test_variant_count(self: TestVEPParser) -> None:
         """Test if the number of variants is correct.
 
         It is expected that all rows from the parsed VEP output are present in the processed VEP output.
         """
-        assert (
-            self.raw_vep_output.count() == self.processed_vep_output.count()
-        ), f"Incorrect number of variants in processed VEP output: expected {self.raw_vep_output.count()}, got {self.processed_vep_output.count()}."
+        assert self.raw_vep_output.count() == self.processed_vep_output.count(), (
+            f"Incorrect number of variants in processed VEP output: expected {self.raw_vep_output.count()}, got {self.processed_vep_output.count()}."
+        )
 
     def test_collection(self: TestVEPParser) -> None:
         """Test if the collection of VEP variantIndex runs without failures."""
@@ -150,6 +147,6 @@ class TestVEPParser:
         )
 
         asserted_targets = [t["targetId"] for t in targets]
-        assert len(asserted_targets) == len(
-            set(asserted_targets)
-        ), "Duplicate ensembl transcripts in a single row."
+        assert len(asserted_targets) == len(set(asserted_targets)), (
+            "Duplicate ensembl transcripts in a single row."
+        )

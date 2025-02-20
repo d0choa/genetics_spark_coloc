@@ -14,7 +14,7 @@
     },
     {
       "metadata": {},
-      "name": "inSilicoPredictors",
+      "name": "variantEffect",
       "nullable": true,
       "type": {
         "containsNull": true,

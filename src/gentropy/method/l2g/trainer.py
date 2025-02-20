@@ -88,6 +88,7 @@ class LocusToGeneTrainer:
 
         Raises:
             ValueError: Train data not set, nothing to fit.
+            AssertionError: When x_train_size or y_train_size are not zero.
         """
         if (
             self.x_train is not None
@@ -180,6 +181,7 @@ class LocusToGeneTrainer:
 
         Raises:
             RuntimeError: If dependencies are not available.
+            AssertionError: When x_train_size or y_train_size are not zero.
         """
         if (
             self.x_train is None

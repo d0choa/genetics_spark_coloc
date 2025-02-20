@@ -433,7 +433,8 @@ class StudyLocus(Dataset):
     def qc_abnormal_pips(
         self: StudyLocus,
         sum_pips_lower_threshold: float = 0.99,
-        sum_pips_upper_threshold: float = 1.0001,  # Set slightly above 1 to account for floating point errors
+        # Set slightly above 1 to account for floating point errors
+        sum_pips_upper_threshold: float = 1.0001,
     ) -> StudyLocus:
         """Filter study-locus by sum of posterior inclusion probabilities to ensure that the sum of PIPs is within a given range.
 
@@ -691,6 +692,7 @@ class StudyLocus(Dataset):
         """Flagging transQTL credible sets based on genomic location of the measured gene.
 
         Process:
+        0. Make sure that the `isTransQtl` column does not exist (remove if exists)
         1. Enrich study-locus dataset with geneId based on study metadata. (only QTL studies are considered)
         2. Enrich with transcription start site and chromosome of the studied gegne.
         3. Flagging any tagging variant of QTL credible sets, if chromosome is different from the gene or distance is above the threshold.
@@ -708,6 +710,12 @@ class StudyLocus(Dataset):
         # As the `geneId` column in the study index is optional, we have to test for that:
         if "geneId" not in study_index.df.columns:
             return self
+
+        # We have to remove the column `isTransQtl` to ensure the column is not duplicated
+        # The duplication can happen when one reads the StudyLocus from parquet with
+        # predefined schema that already contains the `isTransQtl` column.
+        if "isTransQtl" in self.df.columns:
+            self.df = self.df.drop("isTransQtl")
 
         # Process study index:
         processed_studies = (

@@ -39,9 +39,9 @@ def test_get_record_with_minimum_value_group_one_col(
     df = mock_variant_df.transform(
         lambda df: get_record_with_minimum_value(df, grouping_col, sorting_col)
     )
-    assert (
-        df.filter(f.col("chromosome") == 16).collect()[0].__getitem__("position")
-    ), 10116
+    assert df.filter(f.col("chromosome") == 16).collect()[0].__getitem__("position"), (
+        10116
+    )
 
 
 def test_get_record_with_maximum_value_group_two_cols(

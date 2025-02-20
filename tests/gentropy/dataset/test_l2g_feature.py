@@ -295,9 +295,9 @@ class TestCommonColocalisationFeatureLogic:
                 },
             ],
         ).select("studyLocusId", "geneId", "eQtlColocH4Maximum")
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), "The feature values are not as expected."
+        assert observed_df.collect() == expected_df.collect(), (
+            "The feature values are not as expected."
+        )
 
     def test_extend_missing_colocalisation_to_neighbourhood_genes(
         self: TestCommonColocalisationFeatureLogic,
@@ -330,9 +330,9 @@ class TestCommonColocalisationFeatureLogic:
         expected_df = spark.createDataFrame(
             [{"geneId": "gene3", "studyLocusId": "1", "eQtlColocH4Maximum": 0.0}]
         ).select("studyLocusId", "geneId", "eQtlColocH4Maximum")
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), "The feature values are not as expected."
+        assert observed_df.collect() == expected_df.collect(), (
+            "The feature values are not as expected."
+        )
 
     def test_common_neighbourhood_colocalisation_feature_logic(
         self: TestCommonColocalisationFeatureLogic,
@@ -369,9 +369,9 @@ class TestCommonColocalisationFeatureLogic:
                 },
             ],
         ).select("geneId", "studyLocusId", "eQtlColocH4MaximumNeighbourhood")
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), "The expected and observed dataframes do not match."
+        assert observed_df.collect() == expected_df.collect(), (
+            "The expected and observed dataframes do not match."
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(self: TestCommonColocalisationFeatureLogic, spark: SparkSession) -> None:
@@ -555,9 +555,9 @@ class TestCommonDistanceFeatureLogic:
             .select("studyLocusId", "geneId", feature_name)
             .orderBy(feature_name)
         )
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), f"Expected and observed dataframes are not equal for feature {feature_name}."
+        assert observed_df.collect() == expected_df.collect(), (
+            f"Expected and observed dataframes are not equal for feature {feature_name}."
+        )
 
     def test_common_neighbourhood_distance_feature_logic(
         self: TestCommonDistanceFeatureLogic,
@@ -584,9 +584,9 @@ class TestCommonDistanceFeatureLogic:
             ),  # 0.91/0.91
             ["geneId", "studyLocusId", feature_name],
         ).orderBy(feature_name)
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), "Output doesn't meet the expectation."
+        assert observed_df.collect() == expected_df.collect(), (
+            "Output doesn't meet the expectation."
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(
@@ -773,9 +773,9 @@ class TestCommonVepFeatureLogic:
             .orderBy(feature_name)
             .select("studyLocusId", "geneId", feature_name)
         )
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), f"Expected and observed dataframes are not equal for feature {feature_name}."
+        assert observed_df.collect() == expected_df.collect(), (
+            f"Expected and observed dataframes are not equal for feature {feature_name}."
+        )
 
         def test_common_neighbourhood_vep_feature_logic(
             self: TestCommonVepFeatureLogic,
@@ -807,9 +807,9 @@ class TestCommonVepFeatureLogic:
                 .orderBy(feature_name)
                 .select("studyLocusId", "geneId", feature_name)
             )
-            assert (
-                observed_df.collect() == expected_df.collect()
-            ), "Output doesn't meet the expectation."
+            assert observed_df.collect() == expected_df.collect(), (
+                "Output doesn't meet the expectation."
+            )
 
     @pytest.fixture(autouse=True)
     def _setup(self: TestCommonVepFeatureLogic, spark: SparkSession) -> None:
@@ -890,9 +890,9 @@ class TestCommonGeneCountFeatureLogic:
             .orderBy("studyLocusId", "geneId")
         )
 
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), f"Expected and observed dataframes do not match for feature {feature_name}."
+        assert observed_df.collect() == expected_df.collect(), (
+            f"Expected and observed dataframes do not match for feature {feature_name}."
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(self: TestCommonGeneCountFeatureLogic, spark: SparkSession) -> None:
@@ -981,9 +981,9 @@ class TestCommonProteinCodingFeatureLogic:
             .select("studyLocusId", "geneId", "isProteinCoding")
             .orderBy("studyLocusId", "geneId")
         )
-        assert (
-            observed_df.collect() == expected_df.collect()
-        ), "Expected and observed DataFrames do not match."
+        assert observed_df.collect() == expected_df.collect(), (
+            "Expected and observed DataFrames do not match."
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(

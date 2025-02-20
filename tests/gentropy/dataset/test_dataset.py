@@ -42,9 +42,9 @@ class TestDataset:
         """Test if Dataset derived class collects the schema from assets if schema is not provided."""
         df = spark.createDataFrame([(1,)], schema=MockDataset.get_schema())
         ds = MockDataset(_df=df)
-        assert (
-            ds.schema == MockDataset.get_schema()
-        ), "Schema should be inferred from df"
+        assert ds.schema == MockDataset.get_schema(), (
+            "Schema should be inferred from df"
+        )
 
     def test_passing_incorrect_types(self: TestDataset, spark: SparkSession) -> None:
         """Test if passing incorrect object types to Dataset raises an error."""
@@ -97,6 +97,6 @@ def test_process_class_params(spark: SparkSession) -> None:
     }
     class_params, spark_params = Dataset._process_class_params(params)
     assert "_df" in class_params, "Class params should contain _df"
-    assert (
-        "recursiveFileLookup" in spark_params
-    ), "Spark params should contain recursiveFileLookup"
+    assert "recursiveFileLookup" in spark_params, (
+        "Spark params should contain recursiveFileLookup"
+    )

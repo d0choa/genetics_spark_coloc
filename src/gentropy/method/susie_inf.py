@@ -493,6 +493,9 @@ class SUSIE_inf:
 
         Returns:
             StudyLocus: Credible sets which pass filters and LD clumping.
+
+        Raises:
+            AssertionError: When running in clump mode, but no study study_index or ld_index or ld_min_r2 were provided.
         """
         cred_sets.df = (
             cred_sets.df.withColumn(

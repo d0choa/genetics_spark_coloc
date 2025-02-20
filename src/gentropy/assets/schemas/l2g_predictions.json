@@ -21,14 +21,41 @@
     },
     {
       "metadata": {},
-      "name": "locusToGeneFeatures",
+      "name": "features",
       "nullable": true,
       "type": {
-        "keyType": "string",
-        "type": "map",
-        "valueContainsNull": true,
-        "valueType": "float"
+        "containsNull": false,
+        "elementType": {
+          "fields": [
+            {
+              "metadata": {},
+              "name": "name",
+              "nullable": false,
+              "type": "string"
+            },
+            {
+              "metadata": {},
+              "name": "value",
+              "nullable": false,
+              "type": "float"
+            },
+            {
+              "metadata": {},
+              "name": "shapValue",
+              "nullable": true,
+              "type": "float"
+            }
+          ],
+          "type": "struct"
+        },
+        "type": "array"
       }
+    },
+    {
+      "name": "shapBaseValue",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
     }
   ]
 }

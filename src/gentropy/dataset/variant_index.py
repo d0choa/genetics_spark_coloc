@@ -130,7 +130,7 @@ class VariantIndex(Dataset):
         """Import annotation from an other variant index dataset.
 
         At this point the annotation can be extended with extra cross-references,
-        in-silico predictions and allele frequencies.
+        variant effects, allele frequencies, and variant descriptions.
 
         Args:
             annotation_source (VariantIndex): Annotation to add to the dataset
@@ -168,7 +168,12 @@ class VariantIndex(Dataset):
                             f.col(column), f.col(f"{prefix}{column}"), fields_order
                         ).alias(column)
                     )
-                # Non-array columns are coalesced:
+                # variantDescription columns are concatenated:
+                elif column == "variantDescription":
+                    select_expressions.append(
+                        f.concat_ws(" ", f.col(column), f.col(f"{prefix}{column}")).alias(column)
+                    )
+                # All other non-array columns are coalesced:
                 else:
                     select_expressions.append(
                         f.coalesce(f.col(column), f.col(f"{prefix}{column}")).alias(
@@ -222,10 +227,13 @@ class VariantIndex(Dataset):
         """Filter variant annotation dataset by a variant dataframe.
 
         Args:
-            df (DataFrame): A dataframe of variants
+            df (DataFrame): A dataframe of variants.
 
         Returns:
-            VariantIndex: A filtered variant annotation dataset
+            VariantIndex: A filtered variant annotation dataset.
+
+        Raises:
+            AssertionError: When the variant dataframe does not contain eiter `variantId` or `chromosome` column.
         """
         join_columns = ["variantId", "chromosome"]
 
@@ -279,7 +287,7 @@ class VariantIndex(Dataset):
     def annotate_with_amino_acid_consequences(
         self: VariantIndex, annotation: AminoAcidVariants
     ) -> VariantIndex:
-        """Enriching in silico predictors with amino-acid derived predicted consequences.
+        """Enriching variant effect assessments with amino-acid derived predicted consequences.
 
         Args:
             annotation (AminoAcidVariants): amio-acid level variant consequences.
@@ -287,7 +295,7 @@ class VariantIndex(Dataset):
         Returns:
             VariantIndex: where amino-acid causing variants are enriched with extra annotation
         """
-        w = Window.partitionBy("variantId").orderBy(f.size("inSilicoPredictors").desc())
+        w = Window.partitionBy("variantId").orderBy(f.size("variantEffect").desc())
 
         return VariantIndex(
             _df=self.df
@@ -308,17 +316,17 @@ class VariantIndex(Dataset):
             )
             # Joining with amino-acid predictions:
             .join(
-                annotation.df.withColumnRenamed("inSilicoPredictors", "annotations"),
+                annotation.df.withColumnRenamed("variantEffect", "annotations"),
                 on=["uniprotAccession", "aminoAcidChange"],
                 how="left",
             )
             # Merge predictors:
             .withColumn(
-                "inSilicoPredictors",
+                "variantEffect",
                 f.when(
                     f.col("annotations").isNotNull(),
-                    f.array_union("inSilicoPredictors", "annotations"),
-                ).otherwise(f.col("inSilicoPredictors")),
+                    f.array_union("variantEffect", "annotations"),
+                ).otherwise(f.col("variantEffect")),
             )
             # Dropping unused columns:
             .drop("uniprotAccession", "aminoAcidChange", "annotations")
@@ -356,33 +364,33 @@ class VariantIndex(Dataset):
         )
 
 
-class InSilicoPredictorNormaliser:
-    """Class to normalise in silico predictor assessments.
+class VariantEffectNormaliser:
+    """Class to normalise variant effect assessments.
 
     Essentially based on the raw scores, it normalises the scores to a range between -1 and 1, and appends the normalised
-    value to the in silico predictor struct.
+    value to the variant effect struct.
 
     The higher negative values indicate increasingly confident prediction to be a benign variant,
     while the higher positive values indicate increasingly deleterious predicted effect.
 
-    The point of these operations to make the scores comparable across different in silico predictors.
+    The point of these operations to make the scores comparable across different variant effect assessments.
     """
 
     @classmethod
-    def normalise_in_silico_predictors(
-        cls: type[InSilicoPredictorNormaliser],
-        in_silico_predictors: Column,
+    def normalise_variant_effect(
+        cls: type[VariantEffectNormaliser],
+        variant_effect: Column,
     ) -> Column:
-        """Normalise in silico predictors. Appends a normalised score to the in silico predictor struct.
+        """Normalise variant effect assessments. Appends a normalised score to the variant effect struct.
 
         Args:
-            in_silico_predictors (Column): Column containing in silico predictors (list of structs).
+            variant_effect (Column): Column containing variant effect assessments (list of structs).
 
         Returns:
-            Column: Normalised in silico predictors.
+            Column: Normalised variant effect assessments.
         """
         return f.transform(
-            in_silico_predictors,
+            variant_effect,
             lambda predictor: f.struct(
                 # Extracing all existing columns:
                 predictor.method.alias("method"),
@@ -399,20 +407,20 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def resolve_predictor_methods(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
         method: Column,
         assessment: Column,
     ) -> Column:
-        """It takes a score, a method, and an assessment, and returns a normalized score for the in silico predictor.
+        """It takes a score, a method, and an assessment, and returns a normalized score for the variant effect.
 
         Args:
-            score (Column): The raw score from the in silico predictor.
+            score (Column): The raw score from the variant effect.
             method (Column): The method used to generate the score.
             assessment (Column): The assessment of the score.
 
         Returns:
-            Column: Normalised score for the in silico predictor.
+            Column: Normalised score for the variant effect.
         """
         return (
             f.when(method == "LOFTEE", cls._normalise_loftee(assessment))
@@ -421,6 +429,7 @@ class InSilicoPredictorNormaliser:
             .when(method == "AlphaMissense", cls._normalise_alpha_missense(score))
             .when(method == "CADD", cls._normalise_cadd(score))
             .when(method == "Pangolin", cls._normalise_pangolin(score))
+            .when(method == "LossOfFunctionCuration", cls._normalise_lof(assessment))
             # The following predictors are not normalised:
             .when(method == "SpliceAI", score)
             .when(method == "VEP", score)
@@ -454,7 +463,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_foldx(
-        cls: type[InSilicoPredictorNormaliser], score: Column
+        cls: type[VariantEffectNormaliser], score: Column
     ) -> Column:
         """Normalise FoldX ddG energies.
 
@@ -477,7 +486,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_cadd(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
     ) -> Column:
         """Normalise CADD scores.
@@ -503,7 +512,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_gerp(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
     ) -> Column:
         """Normalise GERP scores.
@@ -534,8 +543,37 @@ class InSilicoPredictorNormaliser:
         )
 
     @classmethod
+    def _normalise_lof(
+        cls: type[VariantEffectNormaliser],
+        assessment: Column,
+    ) -> Column:
+        """Normalise loss-of-function verdicts.
+
+        There are five ordinal verdicts.
+        The normalised score is determined by the verdict:
+         - lof: 1
+         - likely_lof: 0.5
+         - uncertain: 0
+         - likely_not_lof: -0.5
+         - not_lof: -1
+
+        Args:
+            assessment (Column): Loss-of-function assessment.
+
+        Returns:
+            Column: Normalised loss-of-function score.
+        """
+        return (
+            f.when(assessment == "lof", f.lit(1))
+            .when(assessment == "likely_lof", f.lit(0.5))
+            .when(assessment == "uncertain", f.lit(0))
+            .when(assessment == "likely_not_lof", f.lit(-0.5))
+            .when(assessment == "not_lof", f.lit(-1))
+        )
+
+    @classmethod
     def _normalise_loftee(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         assessment: Column,
     ) -> Column:
         """Normalise LOFTEE scores.
@@ -557,7 +595,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_sift(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
         assessment: Column,
     ) -> Column:
@@ -601,7 +639,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_polyphen(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         assessment: Column,
         score: Column,
     ) -> Column:
@@ -632,7 +670,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_alpha_missense(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
     ) -> Column:
         """Normalise AlphaMissense scores.
@@ -656,7 +694,7 @@ class InSilicoPredictorNormaliser:
 
     @classmethod
     def _normalise_pangolin(
-        cls: type[InSilicoPredictorNormaliser],
+        cls: type[VariantEffectNormaliser],
         score: Column,
     ) -> Column:
         """Normalise Pangolin scores.

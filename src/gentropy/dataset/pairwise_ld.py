@@ -30,6 +30,9 @@ class PairwiseLD(Dataset):
         """Validating the dataset upon creation.
 
         - Besides the schema, a pairwise LD table is expected have rows being a square number.
+
+        Raises:
+            AssertionError: When the number of rows in the provided dataframe to construct the LD matrix is not even after applying square root.
         """
         row_count = self.df.count()
 

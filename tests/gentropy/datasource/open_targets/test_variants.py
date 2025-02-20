@@ -49,9 +49,9 @@ class TestOpenTargetsVariant:
             ],
             vcf_cols,
         )
-        assert (
-            observed_df.collect() == df_credible_set_expected_df.collect()
-        ), "Unexpected VCF dataframe."
+        assert observed_df.collect() == df_credible_set_expected_df.collect(), (
+            "Unexpected VCF dataframe."
+        )
 
     def test_as_vcf_df_without_variant_id(
         self: TestOpenTargetsVariant,
@@ -85,6 +85,6 @@ class TestOpenTargetsVariant:
             vcf_cols,
         )
 
-        assert (
-            observed_df.collect() == df_without_rs_id_expected_df.collect()
-        ), "Unexpected VCF dataframe."
+        assert observed_df.collect() == df_without_rs_id_expected_df.collect(), (
+            "Unexpected VCF dataframe."
+        )

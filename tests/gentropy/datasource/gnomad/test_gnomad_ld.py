@@ -135,15 +135,15 @@ class TestGnomADLDMatrixSlice:
         included_indices = self.slice_end_index - self.slice_start_index + 1
         expected_pariwise_count = included_indices**2
 
-        assert (
-            self.matrix_slice.count() == expected_pariwise_count
-        ), "The matrix is not complete."
+        assert self.matrix_slice.count() == expected_pariwise_count, (
+            "The matrix is not complete."
+        )
 
     def test_get_ld_matrix_slice__type(self: TestGnomADLDMatrixSlice) -> None:
         """Test LD matrix slice."""
-        assert isinstance(
-            self.matrix_slice, DataFrame
-        ), "The returned data is not a dataframe."
+        assert isinstance(self.matrix_slice, DataFrame), (
+            "The returned data is not a dataframe."
+        )
 
     def test_get_ld_matrix_slice__symmetry(
         self: TestGnomADLDMatrixSlice,
@@ -162,9 +162,9 @@ class TestGnomADLDMatrixSlice:
             how="inner",
         )
 
-        assert (
-            compared.count() == self.matrix_slice.count()
-        ), "The matrix is not complete."
+        assert compared.count() == self.matrix_slice.count(), (
+            "The matrix is not complete."
+        )
         assert (
             compared.filter(f.col("r") == f.col("r_sym")).count() == compared.count()
         ), "The matrix is not symmetric."

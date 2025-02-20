@@ -100,6 +100,9 @@ def is_protein_coding_feature_logic(
 
     Returns:
         DataFrame: Feature dataset, with 1 if the gene is protein-coding, 0 if not.
+
+    Raises:
+        AssertionError: when provided `genomic_window` is more or equal to 500kb.
     """
     assert genomic_window <= 500_000, "Genomic window must be less than 500kb."
     genes_in_window = (

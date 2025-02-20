@@ -135,9 +135,9 @@ class TestCredibleSetQCStep:
             for p in Path(self.output_path).iterdir()
             if str(p).endswith(".parquet")
         ]
-        assert (
-            len(partitions) == self.n_partitions
-        ), "Incorrect number of partitions in the output."
+        assert len(partitions) == self.n_partitions, (
+            "Incorrect number of partitions in the output."
+        )
         cs = StudyLocus.from_parquet(
             session, self.output_path, recursiveFileLookup=True
         )

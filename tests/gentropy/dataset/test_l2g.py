@@ -29,9 +29,9 @@ def test_process_gene_interactions(sample_otp_interactions: DataFrame) -> None:
     """Tests processing of gene interactions from OTP."""
     expected_cols = ["geneIdA", "geneIdB", "score"]
     observed_df = L2GGoldStandard.process_gene_interactions(sample_otp_interactions)
-    assert (
-        observed_df.columns == expected_cols
-    ), "Gene interactions has a different schema."
+    assert observed_df.columns == expected_cols, (
+        "Gene interactions has a different schema."
+    )
 
 
 def test_predictions(mock_l2g_predictions: L2GPrediction) -> None:
@@ -171,9 +171,9 @@ def test_l2g_feature_constructor_with_schema_mismatch(
         ),
         with_gold_standard=False,
     )
-    assert (
-        fm._df.schema["distanceTssMean"].dataType == FloatType()
-    ), "Feature `distanceTssMean` is not being casted to FloatType. Check L2GFeatureMatrix constructor."
+    assert fm._df.schema["distanceTssMean"].dataType == FloatType(), (
+        "Feature `distanceTssMean` is not being casted to FloatType. Check L2GFeatureMatrix constructor."
+    )
 
 
 def test_calculate_feature_missingness_rate(
@@ -185,9 +185,9 @@ def test_calculate_feature_missingness_rate(
     assert isinstance(observed_missingness, dict)
     assert mock_l2g_feature_matrix.features_list is not None and len(
         observed_missingness
-    ) == len(
-        mock_l2g_feature_matrix.features_list
-    ), "Missing features in the missingness rate dictionary."
-    assert (
-        observed_missingness == expected_missingness
-    ), "Missingness rate is incorrect."
+    ) == len(mock_l2g_feature_matrix.features_list), (
+        "Missing features in the missingness rate dictionary."
+    )
+    assert observed_missingness == expected_missingness, (
+        "Missingness rate is incorrect."
+    )

@@ -63,7 +63,9 @@ class TestAppendStudyMetadata:
         assert (
             observed_df.select(f"{colocalisation_side}GeneId").collect()[0][0]
             == expected_geneId
-        ), f"Expected {colocalisation_side}GeneId {expected_geneId}, but got {observed_df.select(f'{colocalisation_side}GeneId').collect()[0][0]}"
+        ), (
+            f"Expected {colocalisation_side}GeneId {expected_geneId}, but got {observed_df.select(f'{colocalisation_side}GeneId').collect()[0][0]}"
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(self: TestAppendStudyMetadata, spark: SparkSession) -> None:

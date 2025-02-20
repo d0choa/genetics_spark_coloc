@@ -92,29 +92,29 @@ class TestLocusBreakerClumping:
         self: TestLocusBreakerClumping, clumped_data: StudyLocus
     ) -> None:
         """Testing return type."""
-        assert isinstance(
-            clumped_data, StudyLocus
-        ), f"Unexpected return type: {type(clumped_data)}"
+        assert isinstance(clumped_data, StudyLocus), (
+            f"Unexpected return type: {type(clumped_data)}"
+        )
 
     def test_number_of_loci(
         self: TestLocusBreakerClumping, clumped_data: StudyLocus
     ) -> None:
         """Testing return type."""
-        assert (
-            clumped_data.df.count() == 5
-        ), f"Unexpected number of loci: {clumped_data.df.count()}"
+        assert clumped_data.df.count() == 5, (
+            f"Unexpected number of loci: {clumped_data.df.count()}"
+        )
 
     def test_top_loci(self: TestLocusBreakerClumping, clumped_data: StudyLocus) -> None:
         """Testing selected top-loci."""
         top_loci_variants = clumped_data.df.select("variantId").distinct().collect()
 
-        assert (
-            len(top_loci_variants) == 1
-        ), f"Unexpected number of top loci: {len(top_loci_variants)} ({top_loci_variants})"
+        assert len(top_loci_variants) == 1, (
+            f"Unexpected number of top loci: {len(top_loci_variants)} ({top_loci_variants})"
+        )
 
-        assert (
-            top_loci_variants[0]["variantId"] == "top_loci"
-        ), f"Unexpected top locus: {top_loci_variants[0]['variantId']}"
+        assert top_loci_variants[0]["variantId"] == "top_loci", (
+            f"Unexpected top locus: {top_loci_variants[0]['variantId']}"
+        )
 
     def test_locus_boundaries(
         self: TestLocusBreakerClumping, clumped_data: StudyLocus

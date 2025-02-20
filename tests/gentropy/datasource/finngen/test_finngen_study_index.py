@@ -354,9 +354,9 @@ def test_finngen_validate_release_prefix(
 ) -> None:
     """Test validate_release_prefix."""
     if not xfail:
-        assert (
-            FinnGenStudyIndex.validate_release_prefix(prefix) == expected_output
-        ), "Incorrect match object"
+        assert FinnGenStudyIndex.validate_release_prefix(prefix) == expected_output, (
+            "Incorrect match object"
+        )
     else:
         with pytest.raises(ValueError):
             FinnGenStudyIndex.validate_release_prefix(prefix)

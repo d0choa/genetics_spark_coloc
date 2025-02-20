@@ -16,7 +16,7 @@ from gentropy.common.spark_helpers import (
     order_array_of_structs_by_field,
     order_array_of_structs_by_two_fields,
 )
-from gentropy.dataset.variant_index import InSilicoPredictorNormaliser, VariantIndex
+from gentropy.dataset.variant_index import VariantEffectNormaliser, VariantIndex
 
 if TYPE_CHECKING:
     from pyspark.sql import Column, DataFrame
@@ -33,9 +33,9 @@ class VariantEffectPredictorParser:
 
     DBXREF_SCHEMA = VariantIndex.get_schema()["dbXrefs"].dataType
 
-    # Schema description of the in silico predictor object:
-    IN_SILICO_PREDICTOR_SCHEMA = get_nested_struct_schema(
-        VariantIndex.get_schema()["inSilicoPredictors"]
+    # Schema description of the variant effect object:
+    VARIANT_EFFECT_SCHEMA = get_nested_struct_schema(
+        VariantIndex.get_schema()["variantEffect"]
     )
 
     # Schema for the allele frequency column:
@@ -325,6 +325,9 @@ class VariantEffectPredictorParser:
             |{0.6, transcript3}    |
             +----------------------+
             <BLANKLINE>
+
+        Raises:
+            AssertionError: When `transcript_column_name` is not a string.
         """
         assert isinstance(
             transcript_column_name, str
@@ -341,7 +344,7 @@ class VariantEffectPredictorParser:
         )[0]
 
     @classmethod
-    @enforce_schema(IN_SILICO_PREDICTOR_SCHEMA)
+    @enforce_schema(VARIANT_EFFECT_SCHEMA)
     def _get_vep_prediction(cls, most_severe_consequence: Column) -> Column:
         return f.struct(
             f.lit("VEP").alias("method"),
@@ -352,7 +355,7 @@ class VariantEffectPredictorParser:
         )
 
     @staticmethod
-    @enforce_schema(IN_SILICO_PREDICTOR_SCHEMA)
+    @enforce_schema(VARIANT_EFFECT_SCHEMA)
     def _get_max_alpha_missense(transcripts: Column) -> Column:
         """Return the most severe alpha missense prediction from all transcripts.
 
@@ -410,8 +413,8 @@ class VariantEffectPredictorParser:
         )
 
     @classmethod
-    @enforce_schema(IN_SILICO_PREDICTOR_SCHEMA)
-    def _vep_in_silico_prediction_extractor(
+    @enforce_schema(VARIANT_EFFECT_SCHEMA)
+    def _vep_variant_effect_extractor(
         cls: type[VariantEffectPredictorParser],
         transcript_column_name: str,
         method_name: str,
@@ -419,17 +422,17 @@ class VariantEffectPredictorParser:
         assessment_column_name: str | None = None,
         assessment_flag_column_name: str | None = None,
     ) -> Column:
-        """Extract in silico prediction from VEP output.
+        """Extract variant effect from VEP output.
 
         Args:
             transcript_column_name (str): Name of the column containing the list of transcripts.
-            method_name (str): Name of the in silico predictor.
+            method_name (str): Name of the variant effect.
             score_column_name (str | None): Name of the column containing the score.
             assessment_column_name (str | None): Name of the column containing the assessment.
             assessment_flag_column_name (str | None): Name of the column containing the assessment flag.
 
         Returns:
-            Column: In silico predictor.
+            Column: Variant effect.
         """
         # Get transcript with the highest score:
         most_severe_transcript: Column = (
@@ -634,34 +637,34 @@ class VariantEffectPredictorParser:
                 cls._extract_clinvar_xrefs(f.col("colocated_variants")).alias(
                     "clinvar_xrefs"
                 ),
-                # Extracting in silico predictors
+                # Extracting variant effect assessments
                 f.when(
-                    # The following in-silico predictors are only available for variants with transcript consequences:
+                    # The following variant effect assessments are only available for variants with transcript consequences:
                     f.col("transcript_consequences").isNotNull(),
                     f.filter(
                         f.array(
                             # Extract CADD scores:
-                            cls._vep_in_silico_prediction_extractor(
+                            cls._vep_variant_effect_extractor(
                                 transcript_column_name="transcript_consequences",
                                 method_name="CADD",
                                 score_column_name="cadd_phred",
                             ),
                             # Extract polyphen scores:
-                            cls._vep_in_silico_prediction_extractor(
+                            cls._vep_variant_effect_extractor(
                                 transcript_column_name="transcript_consequences",
                                 method_name="PolyPhen",
                                 score_column_name="polyphen_score",
                                 assessment_column_name="polyphen_prediction",
                             ),
                             # Extract sift scores:
-                            cls._vep_in_silico_prediction_extractor(
+                            cls._vep_variant_effect_extractor(
                                 transcript_column_name="transcript_consequences",
                                 method_name="SIFT",
                                 score_column_name="sift_score",
                                 assessment_column_name="sift_prediction",
                             ),
                             # Extract loftee scores:
-                            cls._vep_in_silico_prediction_extractor(
+                            cls._vep_variant_effect_extractor(
                                 method_name="LOFTEE",
                                 transcript_column_name="transcript_consequences",
                                 score_column_name="lof",
@@ -669,7 +672,7 @@ class VariantEffectPredictorParser:
                                 assessment_flag_column_name="lof_filter",
                             ),
                             # Extract GERP conservation score:
-                            cls._vep_in_silico_prediction_extractor(
+                            cls._vep_variant_effect_extractor(
                                 method_name="GERP",
                                 transcript_column_name="transcript_consequences",
                                 score_column_name="conservation",
@@ -687,13 +690,13 @@ class VariantEffectPredictorParser:
                 .otherwise(
                     # Extract CADD scores from intergenic object:
                     f.array(
-                        cls._vep_in_silico_prediction_extractor(
+                        cls._vep_variant_effect_extractor(
                             transcript_column_name="intergenic_consequences",
                             method_name="CADD",
                             score_column_name="cadd_phred",
                         ),
                         # Extract GERP conservation score:
-                        cls._vep_in_silico_prediction_extractor(
+                        cls._vep_variant_effect_extractor(
                             method_name="GERP",
                             transcript_column_name="intergenic_consequences",
                             score_column_name="conservation",
@@ -702,7 +705,7 @@ class VariantEffectPredictorParser:
                         cls._get_vep_prediction(f.col("most_severe_consequence")),
                     )
                 )
-                .alias("inSilicoPredictors"),
+                .alias("variantEffect"),
                 # Convert consequence to SO:
                 map_column_by_dictionary(
                     f.col("most_severe_consequence"), cls.SEQUENCE_ONTOLOGY_MAP
@@ -882,11 +885,11 @@ class VariantEffectPredictorParser:
                     )[f.size("proteinCodingTranscripts") - 1],
                 ),
             )
-            # Normalising in silico predictor assessments:
+            # Normalising variant effect assessments:
             .withColumn(
-                "inSilicoPredictors",
-                InSilicoPredictorNormaliser.normalise_in_silico_predictors(
-                    f.col("inSilicoPredictors")
+                "variantEffect",
+                VariantEffectNormaliser.normalise_variant_effect(
+                    f.col("variantEffect")
                 ),
             )
             # Dropping intermediate xref columns:

@@ -306,7 +306,7 @@ def mock_variant_index(spark: SparkSession) -> VariantIndex:
         # https://github.com/databrickslabs/dbldatagen/issues/135
         # It's a workaround for nested column handling in dbldatagen.
         .withColumnSpec(
-            "inSilicoPredictors",
+            "variantEffect",
             expr="""
                 array(
                     named_struct(

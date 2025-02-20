@@ -69,9 +69,9 @@ def test_schema_columns_camelcase(schema_json: str) -> None:
     # CamelCase starts with a lowercase letter and has uppercase letters in between.
 
     for field in schema.fields:
-        assert is_camelcase(
-            field.name
-        ), f"Column name '{field.name}' is not in camelCase."
+        assert is_camelcase(field.name), (
+            f"Column name '{field.name}' is not in camelCase."
+        )
 
 
 class TestValidateSchema:

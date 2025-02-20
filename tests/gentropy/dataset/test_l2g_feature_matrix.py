@@ -60,9 +60,9 @@ class TestFromFeaturesList:
             self.sample_study_locus, features_list, loader
         )
         for feature in features_list:
-            assert (
-                feature in fm._df.columns
-            ), f"Feature {feature} not found in feature matrix."
+            assert feature in fm._df.columns, (
+                f"Feature {feature} not found in feature matrix."
+            )
 
     def test_gold_standard(
         self: TestFromFeaturesList,
@@ -78,9 +78,9 @@ class TestFromFeaturesList:
             self.sample_gold_standard, features_list, loader
         )
         for feature in features_list:
-            assert (
-                feature in fm._df.columns
-            ), f"Feature {feature} not found in feature matrix."
+            assert feature in fm._df.columns, (
+                f"Feature {feature} not found in feature matrix."
+            )
 
     @pytest.fixture(autouse=True)
     def _setup(self: TestFromFeaturesList, spark: SparkSession) -> None:

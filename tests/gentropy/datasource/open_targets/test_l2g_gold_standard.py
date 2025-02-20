@@ -66,9 +66,9 @@ class TestExpandGoldStandardWithNegatives:
         self: TestExpandGoldStandardWithNegatives, spark: SparkSession
     ) -> None:
         """Test expanding positive set with negative set coincides with expected results."""
-        assert (
-            self.observed_df.collect() == self.expected_expanded_gs.collect()
-        ), "GS expansion is not as expected."
+        assert self.observed_df.collect() == self.expected_expanded_gs.collect(), (
+            "GS expansion is not as expected."
+        )
 
     def test_expand_gold_standard_with_negatives_same_positives(
         self: TestExpandGoldStandardWithNegatives, spark: SparkSession

@@ -90,15 +90,15 @@ class TestConvertToVcfStep:
         variants_df = session.spark.read.csv(output_path, sep="\t", header=True)
         # 40 variants (10 variants from each source)
         expected_variant_count = sum(c["n_variants"] for c in sources)
-        assert (
-            variants_df.count() == expected_variant_count
-        ), "Found incorrect number of variants"
+        assert variants_df.count() == expected_variant_count, (
+            "Found incorrect number of variants"
+        )
         partitions = [
             str(p) for p in Path(output_path).iterdir() if str(p).endswith("csv")
         ]
-        assert (
-            len(partitions) == expected_partition_number
-        ), "Found incorrect number of partitions"
+        assert len(partitions) == expected_partition_number, (
+            "Found incorrect number of partitions"
+        )
 
     def test_sorting(
         self,

@@ -27,7 +27,7 @@ class VariantIndexStep:
         vep_output_json_path: str,
         variant_index_path: str,
         hash_threshold: int,
-        gnomad_variant_annotations_path: str | None = None,
+        variant_annotations_path: list[str] | None = None,
         amino_acid_change_annotations: list[str] | None = None,
     ) -> None:
         """Run VariantIndex step.
@@ -37,7 +37,7 @@ class VariantIndexStep:
             vep_output_json_path (str): Variant effect predictor output path (in json format).
             variant_index_path (str): Variant index dataset path to save resulting data.
             hash_threshold (int): Hash threshold for variant identifier length.
-            gnomad_variant_annotations_path (str | None): Path to extra variant annotation dataset.
+            variant_annotations_path (list[str] | None): List of paths to extra variant annotation datasets.
             amino_acid_change_annotations (list[str] | None): list of paths to amino-acid based variant annotations.
         """
         # Extract variant annotations from VEP output:
@@ -46,19 +46,20 @@ class VariantIndexStep:
         )
 
         # Process variant annotations if provided:
-        if gnomad_variant_annotations_path:
-            # Read variant annotations from parquet:
-            annotations = VariantIndex.from_parquet(
-                session=session,
-                path=gnomad_variant_annotations_path,
-                recursiveFileLookup=True,
-                id_threshold=hash_threshold,
-            )
+        if variant_annotations_path:
+            for annotation_path in variant_annotations_path:
+                # Read variant annotations from parquet:
+                annotations = VariantIndex.from_parquet(
+                    session=session,
+                    path=annotation_path,
+                    recursiveFileLookup=True,
+                    id_threshold=hash_threshold,
+                )
 
-            # Update index with extra annotations:
-            variant_index = variant_index.add_annotation(annotations)
+                # Update index with extra annotations:
+                variant_index = variant_index.add_annotation(annotations)
 
-        # If provided read amion-acid based annotation and enrich variant index:
+        # If provided read amino-acid based annotation and enrich variant index:
         if amino_acid_change_annotations:
             for annotation_path in amino_acid_change_annotations:
                 annotation_data = AminoAcidVariants.from_parquet(
@@ -105,6 +106,9 @@ class ConvertToVcfStep:
             source_formats (list[str]): Format of the input dataset.
             output_path (str): Output VCF file path.
             partition_size (int): Approximate number of variants in each output partition.
+
+        Raises:
+            AssertionError: When the length of `source_paths` does not match the lenght of `source_formats`.
         """
         assert len(source_formats) == len(
             source_paths
