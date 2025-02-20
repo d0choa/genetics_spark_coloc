@@ -1,7 +1,7 @@
 # isort: skip_file
 """Factory that computes features based on an input list."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 from typing import Any
 from collections.abc import Iterator, Mapping
@@ -29,6 +29,14 @@ from gentropy.dataset.l2g_features.distance import (
     DistanceSentinelTssNeighbourhoodFeature,
     DistanceTssMeanFeature,
     DistanceTssMeanNeighbourhoodFeature,
+)
+from gentropy.dataset.l2g_features.intervals import (
+    DhsPmtrCorrelationMeanFeature,
+    DhsPmtrCorrelationMeanNeighbourhoodFeature,
+    EnhTssCorrelationMeanFeature,
+    EnhTssCorrelationMeanNeighbourhoodFeature,
+    PchicMeanFeature,
+    PchicMeanNeighbourhoodFeature,
 )
 from gentropy.dataset.l2g_features.l2g_feature import L2GFeature
 from gentropy.dataset.l2g_features.other import (
@@ -131,6 +139,12 @@ class FeatureFactory:
         "proteinGeneCount500kb": ProteinGeneCountFeature,
         "isProteinCoding": ProteinCodingFeature,
         "credibleSetConfidence": CredibleSetConfidenceFeature,
+        "pchicMean": PchicMeanFeature,
+        "pchicMeanNeighbourhood": PchicMeanNeighbourhoodFeature,
+        "enhTssCorrelationMean": EnhTssCorrelationMeanFeature,
+        "enhTssCorrelationMeanNeighbourhood": EnhTssCorrelationMeanNeighbourhoodFeature,
+        "dhsPmtrCorrelationMean": DhsPmtrCorrelationMeanFeature,
+        "dhsPmtrCorrelationMeanNeighbourhood": DhsPmtrCorrelationMeanNeighbourhoodFeature,
     }
 
     def __init__(
@@ -181,7 +195,7 @@ class FeatureFactory:
 
         Args:
             feature_name (str): name of the feature
-            features_input_loader (L2GFeatureInputLoader): Object that contais features input.
+            features_input_loader (L2GFeatureInputLoader): Object that contains features input.
 
         Returns:
             L2GFeature: instantiated feature object

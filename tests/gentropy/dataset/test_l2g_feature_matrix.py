@@ -1,8 +1,9 @@
+# pylint: disable=too-few-public-methods
+# isort: skip_file
+
 """Test L2G feature matrix methods."""
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 import pyspark.sql.functions as f
 import pytest
@@ -23,8 +24,7 @@ from gentropy.dataset.study_locus import StudyLocus
 from gentropy.dataset.target_index import TargetIndex
 from gentropy.method.l2g.feature_factory import L2GFeatureInputLoader
 
-if TYPE_CHECKING:
-    from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 
 
 def test_select_features_inheritance(

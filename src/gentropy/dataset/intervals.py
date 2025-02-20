@@ -5,15 +5,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import pyspark.sql.functions as f
+
 from gentropy.common.Liftover import LiftOverSpark
 from gentropy.common.schemas import parse_spark_schema
 from gentropy.dataset.dataset import Dataset
 from gentropy.dataset.target_index import TargetIndex
+from gentropy.dataset.variant_index import VariantIndex
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
     from pyspark.sql.types import StructType
-
 
 
 @dataclass
@@ -71,3 +73,34 @@ class Intervals(Dataset):
         source_class = source_to_class[source_name]
         data = source_class.read(spark, source_path)  # type: ignore
         return source_class.parse(data, target_index, lift)  # type: ignore
+
+    def overlap_variant_index(
+        self: Intervals, variant_index: VariantIndex
+    ) -> Intervals:
+        """Overlaps intervals with a variant index.
+
+        Args:
+            variant_index (VariantIndex): Variant index dataset
+
+        Returns:
+            Intervals: Variant-to-gene intervals dataset
+        """
+        return Intervals(
+            _df=(
+                self.df.alias("interval")
+                .join(
+                    variant_index.df.selectExpr(
+                        "chromosome as vi_chromosome", "variantId", "position"
+                    ).alias("vi"),
+                    on=[
+                        f.col("vi.vi_chromosome") == f.col("interval.chromosome"),
+                        f.col("vi.position").between(
+                            f.col("interval.start"), f.col("interval.end")
+                        ),
+                    ],
+                    how="inner",
+                )
+                .drop("vi_chromosome", "position")
+            ),
+            _schema=Intervals.get_schema(),
+        )

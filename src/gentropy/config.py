@@ -217,6 +217,17 @@ class LDBasedClumpingConfig(StepConfig):
 
 
 @dataclass
+class IntervalConfig(StepConfig):
+    """Interval step configuration."""
+
+    target_index_path: str = MISSING
+    liftover_chain_file_path: str = MISSING
+    interval_sources: dict[str, str] = MISSING
+    processed_interval_path: str = MISSING
+    _target_: str = "gentropy.intervals.IntervalStep"
+
+
+@dataclass
 class LocusToGeneConfig(StepConfig):
     """Locus to gene step configuration."""
 
@@ -229,6 +240,7 @@ class LocusToGeneConfig(StepConfig):
     model_path: str | None = None
     gold_standard_curation_path: str | None = None
     gene_interactions_path: str | None = None
+    interval_path: str | None = None
     features_list: list[str] = field(
         default_factory=lambda: [
             # max CLPP for each (study, locus, gene) aggregating over a specific qtl type
@@ -262,6 +274,13 @@ class LocusToGeneConfig(StepConfig):
             "vepMaximumNeighbourhood",
             "vepMean",
             "vepMeanNeighbourhood",
+            # intervals
+            "pchicMean",
+            "pchicMeanNeighbourhood",
+            "enhTssCorrelationMean",
+            "enhTssCorrelationMeanNeighbourhood",
+            "dhsPmtrCorrelationMean",
+            "dhsPmtrCorrelationMeanNeighbourhood",
             # other
             "geneCount500kb",
             "proteinGeneCount500kb",
@@ -283,7 +302,7 @@ class LocusToGeneConfig(StepConfig):
     hf_hub_repo_id: str | None = "opentargets/locus_to_gene"
     hf_model_commit_message: str | None = "chore: update model"
     download_from_hub: bool = True
-    cross_validate: bool = True
+    cross_validate: bool = False
     _target_: str = "gentropy.l2g.LocusToGeneStep"
 
 
@@ -305,6 +324,7 @@ class LocusToGeneFeatureMatrixConfig(StepConfig):
     colocalisation_path: str | None = None
     study_index_path: str | None = None
     target_index_path: str | None = None
+    interval_path: str | None = None
     feature_matrix_path: str = MISSING
     features_list: list[str] = field(
         default_factory=lambda: [
@@ -339,6 +359,13 @@ class LocusToGeneFeatureMatrixConfig(StepConfig):
             "vepMaximumNeighbourhood",
             "vepMean",
             "vepMeanNeighbourhood",
+            # intervals
+            "pchicMean",
+            "pchicMeanNeighbourhood",
+            "enhTssCorrelationMean",
+            "enhTssCorrelationMeanNeighbourhood",
+            "dhsPmtrCorrelationMean",
+            "dhsPmtrCorrelationMeanNeighbourhood",
             # other
             "geneCount500kb",
             "proteinGeneCount500kb",
