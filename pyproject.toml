@@ -92,8 +92,8 @@ packages = ["src/gentropy"]
 match = "(main|master)"
 prerelease = false
 
-[tool.semantic_release.branches."release"]
-match = "release/*"
+[tool.semantic_release.branches.dev]
+match = "dev"
 prerelease = true
 prerelease_token = "rc"
 
@@ -101,19 +101,11 @@ prerelease_token = "rc"
 dist_glob_patterns = ["dist/*"]
 upload_to_vcs_release = true
 
-[tool.semantic_release.changelog]
+[tool.semantic-release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
+
+[tool.semantic-release.changelog]
 exclude_commit_patterns = ["chore\\(release\\):"]
-
-[tool.semantic_release.branches."step"]
-match = "(build|chore|ci|docs|feat|fix|perf|style|refactor|test)"
-prerelease = true
-prerelease_token = "alpha"
-
-[tool.semantic_release.branches."dev"]
-match = "dev"
-prerelease = true
-prerelease_token = "dev"
 
 [build-system]
 requires = ["hatchling"]

@@ -84,3 +84,27 @@ For more details on each of these steps, see the sections below.
 ### Support for python versions
 
 As of version 2.1.X gentropy supports multiple python versions. To ensure compatibility with all supported versions, unit tests are run for each of the minor python release from 3.10 to 3.12. Make sure your changes are compatible with all supported versions.
+
+### Development process
+
+The development follows simplified Git Flow process that includes usage of
+
+- `dev` (development branch)
+- `feature` branches
+- `main` (production branch)
+
+The development starts with creating new `feature` branch based on the `dev` branch. Once the feature is ready, the Pull Request for the `dev` branch is created and CI/CD Checks are performed to ensure that the code is compliant with the project conventions. Once the PR is approved, the feature branch is merged into the `dev` branch.
+
+#### Development releases
+
+One can create the dev release tagged by `vX.Y.Z-dev.V` tag. This release will not trigger the CI/CD pipeline to publish the package to the PyPi repository. The release is done by triggering the `Release` GitHub action.
+
+#### Production releases
+
+Once per week, the `Trigger PR for release` github action creates a Pull Request from `dev` to `main` branch, when the PR is approved, the `Release` GitHub action is triggered to create a production release tagged by `vX.Y.Z` tag. This release triggers the CI/CD pipeline to publish the package to the _TestPyPi_ repository. If it is successful, then the actual deployment to the _PyPI_ repository is done. The deployment to the PyPi repository must be verified by the gentropy maintainer.
+
+Below you can find a simplified diagram of the development process.
+
+<div align="center">
+  <img width="800" height="400" src="../../assets/imgs/development-flow.png" alt="development process">
+</div>
