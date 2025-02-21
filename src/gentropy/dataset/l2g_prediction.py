@@ -263,6 +263,7 @@ class L2GPrediction(Dataset):
         shap_values = explainer.shap_values(
             pdf.to_numpy(),
             check_additivity=False,
+            approximate=True,
         )
         base_value = explainer.expected_value
         return (base_value, shap_values)
