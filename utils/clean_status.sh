@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+REQUESTED_REF=$1
+
+CURRENT_REF=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$REQUESTED_REF" != "$CURRENT_REF" ]; then
+    echo "Requested branch $REQUESTED_REF is not the current branch $CURRENT_REF, skipping status checks"
+    exit 0
+fi
 
 echo "Fetching version changes..."
 git fetch

@@ -4,12 +4,13 @@ REGION ?= europe-west1
 APP_NAME ?= $$(cat pyproject.toml | grep -m 1 "name" | cut -d" " -f3 | sed  's/"//g')
 PACKAGE_VERSION ?= $(shell grep -m 1 'version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
 USER_SAFE ?= $(shell echo $(USER) | tr '[:upper:]' '[:lower:]')
+CLUSTER_TIMEOUT ?= 60m
 # NOTE: git rev-parse will always return the HEAD if it sits in the tag,
 # this way we can distinguish the tag vs branch name
 ifeq ($(shell git rev-parse --abbrev-ref HEAD),HEAD)
-	REF := $(shell git describe --exact-match --tags)
+	REF ?= $(shell git describe --exact-match --tags)
 else
-	REF := $(shell git rev-parse --abbrev-ref HEAD)
+	REF ?= $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
 CLEAN_PACKAGE_VERSION := $(shell echo "$(PACKAGE_VERSION)" | tr -cd '[:alnum:]')
@@ -54,8 +55,8 @@ sync-gentropy-cli-script: ## Synchronize the gentropy cli script
 	@gcloud storage cp src/gentropy/cli.py ${BUCKET_NAME}/cli.py
 
 create-dev-cluster: sync-cluster-init-script sync-gentropy-cli-script ## Spin up a simple dataproc cluster with all dependencies for development purposes
-	@echo "Making sure the branch is in sync with remote, so cluster can install gentropy dev version..."
-	@./utils/clean_status.sh || (echo "ERROR: Commit and push or stash local changes, to have up to date cluster"; exit 1)
+	@echo "Making sure the cluster can reference to ${REF} branch to install gentropy..."
+	@./utils/clean_status.sh ${REF} || (echo "ERROR: Commit and push local changes, to have up to date cluster"; exit 1)
 	@echo "Creating Dataproc Dev Cluster"
 	gcloud config set project ${PROJECT_ID}
 	gcloud dataproc clusters create "ot-genetics-dev-${CLEAN_PACKAGE_VERSION}-$(USER_SAFE)" \
@@ -72,7 +73,7 @@ create-dev-cluster: sync-cluster-init-script sync-gentropy-cli-script ## Spin up
 		--optional-components=JUPYTER \
 		--enable-component-gateway \
 		--labels team=open-targets,subteam=gentropy,created_by=${USER_SAFE},environment=development, \
-		--max-idle=60m
+		--max-idle=${CLUSTER_TIMEOUT}
 
 update-dev-cluster: build ## Reinstalls the package on the dev-cluster
 	@echo "Updating Dataproc Dev Cluster"

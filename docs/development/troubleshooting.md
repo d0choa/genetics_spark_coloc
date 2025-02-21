@@ -42,19 +42,45 @@ This can be resolved by adding the follow line to your `~/.zshrc`:
 
 ## Creating development dataproc cluster (OT users only)
 
-To start dataproc cluster in the development mode run
+!!! info "Requirements"
+
+    To create the cluster, you need to auth to the google cloud
+
+    ```bash
+    gcloud auth login
+    ```
+
+To start dataproc cluster in the development mode run.
 
 ```bash
-make create-dev-cluster
+make create-dev-cluster REF=dev
 ```
 
-!!! note "Tip"
-This command will work, provided you have fully commited and pushed all your changes to the remote repository.
+`REF` - remote branch available at the [gentropy repository](https://github.com/opentargets/gentropy)
 
-The command will create a new dataproc cluster with the following configuration:
+During cluster [initialization actions](https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/init-actions#important_considerations_and_guidelines) the `utils/install_dependencies_on_cluster.sh` script is run, that installs `gentropy` package from the remote repository by using VCS support, hence it does not require the **gentropy package whl artifact** to be prepared in the Google Cloud Storage before the make command can be run.
 
-- package installed from the current branch you are checkout on (for example `dev` or `feature/xxx`)
-- uv installed in the cluster (to speed up the installation and dependency resolution process)
-- cli script to run gentropy steps
+Check details how to make a package installable by VCS in [pip documentation](https://pip.pypa.io/en/stable/topics/vcs-support/).
 
-This process requires gentropy to be installable by git repository - see VCS support in [pip documentation](https://pip.pypa.io/en/stable/topics/vcs-support/).
+!!! note "How `create-dev-cluster` works"
+
+    This command will work, provided you have done one of:
+
+    - run `make create-dev-cluster REF=dev`, since the REF is requested, the cluster will attempt to install it from the remote repository.
+    - run `make create-dev-cluster` without specifying the REF or specifying REF that points to your local branch will request branch name you are checkout on your local repository, if any changes are pending locally, the cluster can not be created, it requires stashing or pushing the changes to the remote.
+
+    The command will create a new dataproc cluster with the following configuration:
+
+    - package installed from the requested **REF** (for example `dev` or `feature/xxx`)
+    - uv installed in the cluster (to speed up the installation and dependency resolution process)
+    - cli script to run gentropy steps
+
+!!! tip "Dataproc cluster timeout"
+
+    By default the cluster will **delete itself** when running for **60 minutes after the last submitted job to the cluster was successfully completed** (running jobs interactively via Jupyter or Jupyter lab is not treated as submitted job). To preserve the cluster for arbitrary period (**for instance when the cluster is used only for interactive jobs**) increase the cluster timeout:
+
+    ```bash
+    make create-dev-cluster CLUSTER_TIMEOUT=1d REF=dev # 60m 1h 1d (by default 60m)
+    ```
+
+    For the reference on timeout format check [gcloud documentation](https://cloud.google.com/sdk/gcloud/reference/dataproc/clusters/create#--max-idle)
